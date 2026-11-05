@@ -181,20 +181,26 @@ button{font:inherit;color:inherit}
 .pickbar{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--brass-d);background:#c9a24a26;padding:6px 10px;font-size:16px;border-radius:3px}
 .muted{color:var(--ink2);font-size:15px;font-style:italic}
 @media (min-width:900px) and (min-aspect-ratio:1/1){
-  #app{grid-template-columns:290px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-areas:"head opp" "sheet stage" "sheet me" "sheet tray";gap:10px 14px;padding-block:14px}
-  #head{grid-template-columns:1fr;grid-template-areas:"ev" "score" "calc";padding:14px;gap:12px;align-self:start}
-  #opp{align-self:end}
+  #app{grid-template-columns:290px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-areas:"rail opp" "rail stage" "rail me" "rail tray";gap:10px 14px;padding-block:14px}
+  #rail{grid-area:rail;display:flex;flex-direction:column;gap:10px;min-height:0}
+  #head{grid-template-columns:1fr;grid-template-areas:"ev" "score" "calc";padding:14px;gap:12px;align-self:stretch}
   .ev b{font-size:18px}
   .scoreNums b{font-size:32px}.scoreCard{padding:9px 12px}
   .calcBox{flex-direction:column;align-items:stretch;gap:5px}.calc{width:100%}
   .plate b{font-size:26px}.plate{padding:5px 4px 6px}.plate small{font-size:8.5px}.cLabel{font-size:17px}
-  #sheetBox{flex-direction:column;align-items:stretch;padding:12px;min-height:0}
+  #sheetBox{flex:1 1 auto;flex-direction:column;align-items:stretch;padding:12px;min-height:0}
   .moves{display:block;background:var(--paper);color:var(--ink);overflow:auto;white-space:normal;border-radius:3px;box-shadow:inset 0 0 0 1px var(--rule);-webkit-user-select:text;user-select:text}
   .moves li{display:grid;grid-template-columns:2.4em 1fr 1fr;padding:2px 10px;border-bottom:1px solid var(--rule)}
   .moves .n{color:var(--ink2)}.moves .last{color:var(--blood)}.moves .ann{color:var(--blood)}.moves .empty{color:var(--ink2);display:block}
   .caps{max-width:220px}
   .relic{width:48px;height:48px;font-size:23px}
 }
+@media (min-width:1280px) and (min-aspect-ratio:1/1){
+  #app{grid-template-columns:300px minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"rail opp opp" "rail stage stage" "rail me tray"}
+}
+/* phones: the rail dissolves so its cards keep their own rows */
+#rail{display:contents}
+@media (min-width:900px) and (min-aspect-ratio:1/1){#rail{display:flex}}
 
 /* the Curio Shoppe: reverse-gilded glass sign, 3D cabinet, string tags, brass placards */
 .shop{position:fixed;inset:0;z-index:45;display:grid;grid-template-rows:auto minmax(0,1fr) auto;background:#0f0907;color:var(--paper)}
@@ -251,11 +257,14 @@ button{font:inherit;color:inherit}
 </style>
 
 <div id="app">
+  <div id="rail">
   <header id="head" class="wood">
     <div class="ev"><span class="eyebrow" id="evName">Googly Gambit</span><b id="evRound">A chess roguelike</b></div>
     <div class="scoreCard"><div class="lbl">Points</div><div class="scoreNums"><b id="hScore">0</b><span class="of" id="hOf">/ 0</span></div><div class="bar" id="hBarWrap"><i id="hBar"></i></div></div>
     <div class="calcBox"><div id="cLabel" class="cLabel">Capture to score</div><div class="calc" id="calc"><div class="plate mat" id="plMat"><small>Material</small><b id="cChips">0</b></div><span class="times">×</span><div class="plate bri" id="plMult"><small>Brilliance</small><b id="cMult">0</b></div></div></div>
   </header>
+  <section id="sheetBox" class="wood" aria-label="Scoresheet"><div class="lbl">Scoresheet</div><ol id="moves" class="moves"></ol></section>
+  </div>
   <section id="opp" class="player" aria-label="Opponent">
     <i class="dot black"></i>
     <div class="pinfo"><b><span id="oppName">Black</span><span class="rating" id="oppRating"></span></b><small id="oppSub">Waiting at the board</small></div>
@@ -267,9 +276,10 @@ button{font:inherit;color:inherit}
     <div id="bubbles"></div>
     <div id="pops"></div>
     <div class="tools">
-      <button id="bView" class="tool" type="button">Tilt</button>
+      <button id="bView" class="tool" type="button" title="Switch between a tilted and a top-down view">Tilt</button>
       <button id="bSpeed" class="tool" type="button">1×</button>
       <button id="bSound" class="tool" type="button">Sound on</button>
+      <button id="bReset" class="tool" type="button" hidden>Reset view</button>
     </div>
     <div id="nameplate" class="nameplate" hidden></div>
     <div id="toast" class="toast" hidden></div>
@@ -280,7 +290,6 @@ button{font:inherit;color:inherit}
     <div class="caps" id="meCaps"></div>
     <div class="clock" id="meClock"><small>Moves left</small><b id="hMoves">0</b></div>
   </section>
-  <section id="sheetBox" class="wood" aria-label="Scoresheet"><div class="lbl">Scoresheet</div><ol id="moves" class="moves"></ol></section>
   <footer id="tray" class="wood"><div class="trayLbl">Curios<span id="relicCount">0/5</span></div><div id="relics" class="relics"></div><div class="purse"><small>Purse</small><b id="hMoney">£4</b></div></footer>
 </div>
 <div id="shop" class="shop" hidden>
@@ -1364,14 +1373,35 @@ async function animCapture(a,v,toPos){
 }
 
 // ---------- camera, resize, loop ----------
+// the player can turn, tilt, zoom and pan the view; VIEW holds those offsets from the fitted camera
+const VIEW={yaw:0,pitch:0,zoom:1,pan:new THREE.Vector3()}, LOOK0=new THREE.Vector3(0,.25,.35);
+let fitD=12, fitElev=.98;
+const viewIsDefault=()=>Math.abs(VIEW.yaw)<.01&&Math.abs(VIEW.pitch)<.01&&Math.abs(VIEW.zoom-1)<.01&&VIEW.pan.lengthSq()<1e-4;
+function applyView(){
+  VIEW.zoom=THREE.MathUtils.clamp(VIEW.zoom,.45,1.6); VIEW.pitch=THREE.MathUtils.clamp(VIEW.pitch,.4-fitElev,1.5-fitElev);
+  if(VIEW.pan.length()>3.2) VIEW.pan.setLength(3.2);
+  const e=fitElev+VIEW.pitch, d=fitD*VIEW.zoom;
+  camLook.copy(LOOK0).add(VIEW.pan);
+  camBase.set(camLook.x+Math.sin(VIEW.yaw)*Math.cos(e)*d,Math.sin(e)*d,camLook.z+Math.cos(VIEW.yaw)*Math.cos(e)*d);
+  camera.position.copy(camBase); camera.lookAt(camLook);
+  scene.fog.near=d+2; scene.fog.far=d+34;
+  const rb=document.getElementById('bReset'); if(rb) rb.hidden=viewIsDefault();
+}
 function frameCamera(){
   const w=stageEl.clientWidth||1,h=stageEl.clientHeight||1, asp=w/h;
-  renderer.setSize(w,h,false); camera.aspect=asp; bgU.uAsp.value=asp;
+  renderer.setSize(w,h,false); camera.aspect=asp; bgU.uAsp.value=asp; camera.updateProjectionMatrix();
   const elev=viewMode===1?1.42:(asp<.8?1.08:.98), vf=camera.fov*Math.PI/180, hf=2*Math.atan(Math.tan(vf/2)*asp);
-  const dW=5.05/Math.tan(hf/2), dH=(4.9*Math.sin(elev)+1.3*Math.cos(elev))/Math.tan(vf/2);
-  const d=Math.max(dW,dH)+.6;
-  scene.fog.near=d+2; scene.fog.far=d+34;
-  camBase.set(0,Math.sin(elev)*d,Math.cos(elev)*d+.35); camera.position.copy(camBase); camera.lookAt(camLook); camera.updateProjectionMatrix();
+  const dW=4.8/Math.tan(hf/2), dH=(4.75*Math.sin(elev)+1.3*Math.cos(elev))/Math.tan(vf/2);
+  fitD=Math.max(dW,dH)+.3; fitElev=elev; applyView();
+}
+function rotateView(dx,dy){VIEW.yaw-=dx*.008; VIEW.pitch+=dy*.005; applyView();}
+function zoomView(f){VIEW.zoom*=f; applyView();}
+function panView(dx,dy){const s=fitD*VIEW.zoom*.0016, c=Math.cos(VIEW.yaw), n=Math.sin(VIEW.yaw);
+  VIEW.pan.x+=(-c*dx-n*dy)*s; VIEW.pan.z+=(n*dx-c*dy)*s; applyView();}
+function resetView(){
+  const y0=Math.atan2(Math.sin(VIEW.yaw),Math.cos(VIEW.yaw)), p0=VIEW.pitch, z0=VIEW.zoom, pan0=VIEW.pan.clone();
+  return tween(.45,e=>{VIEW.yaw=y0*(1-e); VIEW.pitch=p0*(1-e); VIEW.zoom=z0+(1-z0)*e; VIEW.pan.copy(pan0).multiplyScalar(1-e); applyView();},Ez.io)
+    .then(()=>{VIEW.yaw=0; VIEW.pitch=0; VIEW.zoom=1; VIEW.pan.set(0,0,0); applyView();});
 }
 new ResizeObserver(frameCamera).observe(stageEl);
 let frameHooks=[];
@@ -1399,6 +1429,79 @@ function loop(now){
   if(!shopOpen){renderer.clear(); renderer.render(bgScene,bgCam); renderer.clearDepth(); renderer.render(scene,camera);}
 }
 frameCamera(); requestAnimationFrame(loop);
+
+// ---------- table dressing: a chess clock that keeps your moves, a candle, books and tea ----------
+{
+  const T=-.8, wood=toon('#3a2418'), ivory=toon('#efe4c8');
+  const brassM=new THREE.MeshPhongMaterial({color:0xc9a24a,specular:0xfff2c0,shininess:80,emissive:0x2a1c06});
+  const shadowy=m=>{m.castShadow=true; m.receiveShadow=true; return m;};
+  const cyl=(rt,rb,h,n)=>geo('Y'+rt+'_'+rb+'_'+h+'_'+(n||16),()=>new THREE.CylinderGeometry(rt,rb,h,n||16));
+  // the chess clock: a walnut case with a sloped front; your face counts moves left, Black's dial ticks while it thinks
+  const ck=new THREE.Group(); ck.position.set(6.2,T,-2.7); ck.rotation.y=-.5; scene.add(ck);
+  const sh=new THREE.Shape(); [[-.55,0],[.55,0],[.55,.18],[.22,1.05],[-.55,1.05]].forEach((q,i)=>i?sh.lineTo(q[0],q[1]):sh.moveTo(q[0],q[1]));
+  const cg=new THREE.ExtrudeGeometry(sh,{depth:2.5,bevelEnabled:true,bevelSize:.03,bevelThickness:.03,bevelSegments:2}); cg.rotateY(-Math.PI/2); cg.translate(1.25,0,0);
+  ck.add(shadowy(new THREE.Mesh(cg,wood)));
+  const tilt=Math.atan2(.33,.87), fz=.385+Math.cos(tilt)*.035, fy=.615+Math.sin(tilt)*.035;
+  const faceCv=[], faceTex=[], plungers=[];
+  for(const s of [-1,1]){
+    const cv=document.createElement('canvas'); cv.width=256; cv.height=224; const tx=new THREE.CanvasTexture(cv); faceCv.push(cv); faceTex.push(tx);
+    const bez=new THREE.Mesh(new THREE.PlaneGeometry(1.02,.86),brassM); bez.position.set(s*.6,fy-Math.sin(tilt)*.004,fz-Math.cos(tilt)*.004); bez.rotation.x=-tilt; ck.add(bez);
+    const f=new THREE.Mesh(new THREE.PlaneGeometry(.92,.78),new THREE.MeshBasicMaterial({map:tx})); f.position.set(s*.6,fy,fz); f.rotation.x=-tilt; ck.add(f);
+    const pl=new THREE.Group(); pl.position.set(s*.6,1.05,-.17); ck.add(pl);
+    shadowy(part(pl,cyl(.06,.06,.3,10),brassM,[0,.12,0],null,null,0)); part(pl,cyl(.13,.13,.06,16),brassM,[0,.28,0],null,null,0); plungers.push(pl);
+    if(s>0){const hand=new THREE.Mesh(new THREE.BoxGeometry(.018,.2,.004),new THREE.MeshBasicMaterial({color:0x221913})); hand.geometry.translate(0,.08,0);
+      hand.position.set(0,-.056,.004); f.add(hand); ck.userData.hand=hand;}
+  }
+  for(const x of [-1.1,1.1]) for(const z of [-.42,.42]) part(ck,sph(.07),brassM,[x,.02,z],[1,.5,1],null,0);
+  part(ck,box(2.56,.04,.06),brassM,[0,1.08,.22],null,null,0);
+  const paint=(i,run)=>{const cv=faceCv[i], g=cv.getContext('2d'), W=cv.width, H=cv.height;
+    const gr=g.createRadialGradient(W/2,H/2,10,W/2,H/2,W*.7); gr.addColorStop(0,'#fbf5e6'); gr.addColorStop(1,'#e6d8b8'); g.fillStyle=gr; g.fillRect(0,0,W,H);
+    g.strokeStyle='#7d5f24'; g.lineWidth=6; g.strokeRect(8,8,W-16,H-16);
+    g.textAlign='center'; g.textBaseline='middle'; g.fillStyle='#5d4b3a'; g.font='700 26px Cinzel, Georgia, serif';
+    if(i===0){g.fillText('YOU',W/2,40); g.font='600 20px "EB Garamond", Georgia, serif'; g.fillText('moves left',W/2,H-34);
+      g.fillStyle=run.low?'#8c2b2d':'#221913'; g.font='700 92px "EB Garamond", Georgia, serif'; g.fillText(run.moves,W/2,H/2+6);}
+    else {g.fillText('BLACK',W/2,38); const cx=W/2, cy=H/2+16, r=66; g.strokeStyle='#221913';
+      for(let k=0;k<12;k++){const a=k/12*Math.PI*2; g.lineWidth=k%3?2:5; g.beginPath(); g.moveTo(cx+Math.sin(a)*r*.82,cy-Math.cos(a)*r*.82); g.lineTo(cx+Math.sin(a)*r,cy-Math.cos(a)*r); g.stroke();}
+      g.fillStyle='#221913'; g.beginPath(); g.arc(cx,cy,6,0,Math.PI*2); g.fill();}
+    if(run.active){g.fillStyle='#8c2b2d'; g.beginPath(); g.moveTo(W-44,22); g.lineTo(W-20,30); g.lineTo(W-44,40); g.closePath(); g.fill(); g.fillRect(W-46,20,4,34);}
+    faceTex[i].needsUpdate=true;};
+  let shown='', handA=0;
+  const refreshClock=()=>{const mv=document.getElementById('hMoves').textContent, meOn=document.getElementById('me').classList.contains('active'), oppOn=document.getElementById('opp').classList.contains('active'),
+      low=document.getElementById('meClock').classList.contains('low'), key=[mv,meOn,oppOn,low].join('|');
+    if(key===shown) return; shown=key; paint(0,{moves:mv,active:meOn,low}); paint(1,{active:oppOn});};
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{shown=''; refreshClock();});
+  // the candle: brass chamberstick, a flickering flame and a warm light that reaches the board
+  const cd=new THREE.Group(); cd.position.set(-6.4,T,-3.4); scene.add(cd);
+  shadowy(part(cd,lathe('candleHold',[[0,0],[.46,0],[.48,.04],[.4,.08],[.13,.12],[.1,.3],[.15,.36],[.17,.42],[0,.42]]),brassM));
+  part(cd,torG(.14,.03),brassM,[.5,.1,0],null,[0,0,0],0);
+  shadowy(part(cd,cyl(.11,.12,.95,16),ivory,[0,.9,0]));
+  for(const [x,y,z] of [[.1,1.28,.03],[-.06,1.18,.09],[.04,1.05,-.1]]) part(cd,sph(.035),ivory,[x,y,z],[1,1.6,1],null,0);
+  part(cd,cyl(.012,.012,.08,6),DARK,[0,1.41,0],null,null,0);
+  const flame=new THREE.Group(); flame.position.y=1.5; cd.add(flame);
+  const fo=new THREE.Mesh(sph(.06),new THREE.MeshBasicMaterial({color:0xffa630})); fo.scale.set(1,2.1,1); flame.add(fo);
+  const fi=new THREE.Mesh(sph(.032),new THREE.MeshBasicMaterial({color:0xfff6d8})); fi.scale.set(1,1.8,1); fi.position.y=-.03; flame.add(fi);
+  const halo=new THREE.Mesh(sph(.42),new THREE.MeshBasicMaterial({color:0xffb050,transparent:true,opacity:.16,depthWrite:false,blending:THREE.AdditiveBlending})); flame.add(halo);
+  const glow=new THREE.PointLight(0xffb060,1.1,11,1.6); glow.position.set(0,1.7,0); cd.add(glow);
+  // books and a cup of tea
+  const bk=new THREE.Group(); bk.position.set(-6.1,T,-.7); bk.rotation.y=.55; bk.scale.setScalar(.85); scene.add(bk);
+  shadowy(part(bk,box(1.6,.24,1.1),toon('#6a1a1f'),[0,.12,0],null,null,0)); part(bk,box(1.5,.2,1.04),toon('#efe4c8'),[.04,.12,0],null,null,0);
+  shadowy(part(bk,box(1.4,.2,.98),toon('#2d4a5a'),[.05,.34,0],null,[0,-.22,0],0)); part(bk,box(1.3,.16,.92),toon('#efe4c8'),[.08,.34,0],null,[0,-.22,0],0);
+  part(bk,box(.06,.21,.99),brassM,[-.62,.34,-.16],null,[0,-.22,0],0);
+  const cup=new THREE.Group(); cup.position.set(.1,.44,.05); bk.add(cup);
+  shadowy(part(cup,cyl(.3,.24,.04,24),ivory,[0,.02,0]));
+  shadowy(part(cup,lathe('teacup',[[0,.04],[.13,.04],[.17,.1],[.21,.26],[.22,.32],[.2,.32],[.19,.27],[.15,.12],[0,.1]]),ivory));
+  part(cup,cyl(.195,.195,.01,20),toon('#7a3e1a'),[0,.27,0],null,null,0);
+  part(cup,torG(.07,.02),ivory,[.22,.19,0],null,[0,0,0],0);
+  part(cup,torG(.205,.008),toon('#c9a24a'),[0,.3,0],null,[Math.PI/2,0,0],0);
+  frameHooks.push(dt=>{
+    refreshClock();
+    const meOn=document.getElementById('me').classList.contains('active'), oppOn=document.getElementById('opp').classList.contains('active');
+    plungers.forEach((pl,i)=>{const up=(i===0?meOn:oppOn)?0:-.09; pl.position.y+=(1.05+up-pl.position.y)*Math.min(1,dt*12);});
+    if(oppOn) handA+=dt*3.4; if(ck.userData.hand) ck.userData.hand.rotation.z=-handA;
+    const fl=REDUCED?1:1+Math.sin(clock*13)*.06+Math.sin(clock*7.3)*.05+(Math.random()-.5)*.04;
+    flame.scale.set(1,fl,1); flame.rotation.z=REDUCED?0:Math.sin(clock*2.1)*.06; glow.intensity=1.1*fl; halo.material.opacity=.13+(fl-1)*.6;
+  });
+}
 
 // ---------- picking ----------
 const ray=new THREE.Raycaster(), ndc=new THREE.Vector2(), groundPlane=new THREE.Plane(V3(0,1,0),0);
@@ -1541,9 +1644,33 @@ async function startRound(){
 }
 
 // ---------- input ----------
-let downPt=null;
-canvas.addEventListener('pointerdown',e=>{downPt={x:e.clientX,y:e.clientY}; initAudio();});
-canvas.addEventListener('pointerup',e=>{if(!downPt) return; const d=Math.hypot(e.clientX-downPt.x,e.clientY-downPt.y); downPt=null; if(d>14) return; onTap(pickSquare(e.clientX,e.clientY));});
+let downPt=null, pinch=null;
+const ptrs=new Map();
+const pinchState=()=>{const [a,b]=[...ptrs.values()]; return {d:Math.hypot(a.x-b.x,a.y-b.y),x:(a.x+b.x)/2,y:(a.y+b.y)/2};};
+canvas.addEventListener('pointerdown',e=>{
+  initAudio(); try{canvas.setPointerCapture(e.pointerId);}catch(_){}
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===1){downPt={x:e.clientX,y:e.clientY,pan:e.button===2||e.shiftKey,moved:false}; pinch=null;}
+  else {downPt=null; pinch=ptrs.size===2?pinchState():null;}
+});
+canvas.addEventListener('pointermove',e=>{
+  const p=ptrs.get(e.pointerId); if(!p) return; const px=p.x, py=p.y; p.x=e.clientX; p.y=e.clientY;
+  if(ptrs.size===1&&downPt){
+    if(!downPt.moved){if(Math.hypot(p.x-downPt.x,p.y-downPt.y)<=14) return; downPt.moved=true;}
+    if(downPt.pan) panView(p.x-px,p.y-py); else rotateView(p.x-px,p.y-py);
+  } else if(ptrs.size===2&&pinch){
+    const n=pinchState(); if(n.d>10&&pinch.d>10) zoomView(pinch.d/n.d); panView(n.x-pinch.x,n.y-pinch.y); pinch=n;
+  }
+});
+const endPtr=e=>{
+  if(!ptrs.has(e.pointerId)) return; ptrs.delete(e.pointerId);
+  if(ptrs.size===0){const tap=downPt&&!downPt.moved&&e.type==='pointerup'&&e.button===0; downPt=null; pinch=null; if(tap) onTap(pickSquare(e.clientX,e.clientY)); return;}
+  // one finger left after a pinch: keep turning from where it is, never tap
+  const [q]=[...ptrs.values()]; downPt={x:q.x,y:q.y,pan:false,moved:true}; pinch=null;
+};
+canvas.addEventListener('pointerup',endPtr); canvas.addEventListener('pointercancel',endPtr);
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+canvas.addEventListener('wheel',e=>{e.preventDefault(); zoomView(Math.exp(e.deltaY*(e.deltaMode===1?.04:.0012)));},{passive:false});
 function onTap(sq){
   const t=sq>=0?toys[sq]:null;
   if(!RS||RS.over||busy||RS.turn!=='w'){if(t){showPlate(t); poke(t);} return;}
@@ -2534,7 +2661,7 @@ function showTitle(){
       <dt>Between games</dt><dd>Spend your purse in the Curio Shoppe on curios, recruits, promotions and inlays that restyle your pieces. Win eight events to become World Champion.</dd>
     </dl>
     <div class="row" style="justify-content:center">${saved?'<button class="btn" id="bCont" type="button">Continue run</button>':''}<button class="btn ${saved?'ghost':''}" id="bNew" type="button">New run</button></div>
-    <p class="muted" style="text-align:center;margin:0 auto">Tap a piece, then a marked square. Worried eyes mean that piece is under attack.</p>`,true);
+    <p class="muted" style="text-align:center;margin:0 auto">Tap a piece, then a marked square. Worried eyes mean that piece is under attack.<br>Drag to turn the board, scroll or pinch to zoom, right-drag or use two fingers to pan.</p>`,true);
   on('bNew',()=>{clearSave(); newRun(); showBlinds();});
   on('bCont',()=>{run=saved; let mx=0; for(const d of run.army) if(d) mx=Math.max(mx,d.id); UID=mx+1; if(run.phase==='shop'&&run.shop) showShop(); else showBlinds();});
   demoBoard();
@@ -2607,7 +2734,8 @@ function showVictory(){
 }
 
 // ---------- tools ----------
-$('bView').onclick=()=>{viewMode=1-viewMode; $('bView').textContent=viewMode?'Top':'Tilt'; frameCamera();};
+$('bView').onclick=()=>{viewMode=1-viewMode; $('bView').textContent=viewMode?'Top':'Tilt'; VIEW.pitch=0; frameCamera();};
+$('bReset').onclick=()=>{resetView();};
 $('bSpeed').onclick=()=>{SPEED=SPEED===1?2:SPEED===2?3:1; $('bSpeed').textContent=SPEED+'×';};
 $('bSound').onclick=()=>{soundOn=!soundOn; initAudio(); $('bSound').textContent=soundOn?'Sound on':'Sound off';};
 document.addEventListener('keydown',e=>{if(e.key==='Escape') deselect();});
