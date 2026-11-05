@@ -1,0 +1,42 @@
+# Googly Gambit: notes for Claude Code
+
+A 3D chess roguelike in a single self-contained file, `index.html` (about 2,600 lines). It was ported from a Claude artifact page and is still published as one:
+https://claude.ai/artifact/G7xwHMRpJoYSBYCWN7vMyB
+
+## Layout of index.html
+
+Find sections by searching for the `// =====` banner comments:
+
+| Section | What's there |
+| --- | --- |
+| `<style>` (top) | All CSS. Colour tokens on `:root`. Phone layout first, wide layout under `@media (min-width:900px) and (min-aspect-ratio:1/1)`. |
+| `CHESS ENGINE` | Board as `Int8Array(64)`, index `rank*8+file`. White (+) is the player, Black (-) the AI. Move gen, `isAttacked`, negamax `bestMove`. `SHIELD`, `TRANS` and `RULES` carry ability and boss rules into the engine. |
+| `GAME DATA` | Scoring tables (`CHIPS`=Material, `MULT`=Brilliance), `PERSONA` lines, `RARE` pieces, `RELICS` (curios), `BOSSES`, events and targets, army builders, shop stock generation. |
+| `SCENE` | three.js renderer, board, piece factory (`buildModel`), `BOSS_LOOK` costumes, inlays (`ED_MAT`), the `Toy` class (eyes, expressions). |
+| `ANIMATION, FX, SOUND` | `tween`, Web Audio `SFX`, particles, speech bubbles, move and capture choreography, render `loop`. |
+| `ROUND LOGIC` | Save/load, HUD, `startRound`, input (`onTap`), `playerMove`, `enemyTurn`, `scoreEvent`, win/lose. |
+| `RARE PIECE ABILITIES` | Feats, Jester swap, Executioner sentence, Alchemist transmute, Herald rally. |
+| `BOSS RULES` | Fog, Phantom, Necromancer, Puppeteer, Glacier, Jailer/Gorgon locks, Saboteur mines, Blacksmith, Plague Doctor, Gardener vines. |
+| `THE CURIO SHOPPE` | Second three.js scene: shelves, one 3D model per curio (`CURIO`), buying, selling, swapping army squares. |
+| `SCREENS` | Title, event list (blinds), prize-giving, game over, victory. |
+
+## Rules that keep it working as a Claude page
+
+- Keep it one file. CSS and JS stay inline.
+- External scripts only from cdnjs.cloudflare.com (or jsDelivr/unpkg), pinned to an exact version. Stylesheets only from Google Fonts. Anything else is blocked on Claude pages.
+- Wrap every `localStorage` call in try/catch, as `save()`/`loadSave()` do. The save key is `googly-gambit-run-v2`; bump it if the save format changes.
+- No `alert`/`confirm`/`prompt`; they do nothing on Claude pages.
+
+## Publishing the Claude page
+
+Line 1 of `index.html` is the page skeleton (`<!doctype html>…<body>`) and the last line is `</body></html>`. The Artifact tool adds that skeleton itself, so publish a copy without those two lines:
+
+```sh
+sed '1d;$d' index.html > "$SCRATCHPAD/googly-gambit.html"
+```
+
+Then publish that file with the Artifact tool, passing `url: https://claude.ai/artifact/G7xwHMRpJoYSBYCWN7vMyB` so the same page updates instead of a new one being created.
+
+## Testing in a cloud session
+
+Cloud sessions may block cdnjs. To smoke-test with Playwright, fetch the same build from npm (`npm pack three@0.128.0`, file `package/build/three.min.js`) and serve it for the cdnjs URL with `page.route`. Game globals such as `RS`, `onTap` and `rc` are reachable from `page.evaluate`, e.g. `onTap(rc(1,4)); onTap(rc(3,4))` plays e2–e4 once a round has started.
