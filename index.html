@@ -227,6 +227,21 @@ button{font:inherit;color:inherit}
 .stamp{display:inline-block;margin:2px 0 3px;padding:2px 6px;border:2px solid #8c2b2d;border-radius:3px;color:#8c2b2d;font-family:var(--f-display);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;rotate:-8deg}
 .placard{position:absolute;left:50%;bottom:12px;translate:-50% 0;width:min(460px,calc(100% - 32px));z-index:3;padding:15px 20px 14px;color:#3a2610;border-radius:5px;background:linear-gradient(165deg,#f3dc93 0%,#d1a84f 35%,#e9c875 55%,#b08530 100%);box-shadow:inset 0 1px 0 #fff8d0,inset 0 -2px 0 #7a5418,0 0 0 1px #4a3010,0 14px 34px #000c;animation:plq .3s ease-out;-webkit-user-select:text;user-select:text}
 .placard.top{top:12px;bottom:auto}
+/* an opened lot: ivory sheet of cards over the shop */
+.lotsheet{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));background:#0b0705b8;overflow:auto}
+.lotbox{width:min(760px,100%);max-height:100%;overflow:auto;background:var(--paper);color:var(--ink);border-radius:3px;padding:18px;box-shadow:0 0 0 1px var(--ink2),0 0 0 5px var(--paper),0 0 0 6px var(--brass-d),0 20px 50px #000c;display:flex;flex-direction:column;gap:12px;animation:panelIn .3s ease-out;-webkit-user-select:text;user-select:text}
+.lotbox .k{font-family:var(--f-display);font-size:9.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--blood)}
+.lotbox h3{margin:0;font-family:var(--f-display);font-weight:700;font-size:clamp(19px,5vw,24px);letter-spacing:.05em;text-wrap:balance}
+.lotbox p{margin:0;font-size:16.5px;line-height:1.4;max-width:62ch}
+.lotcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.lotcard{display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center;border:1px solid var(--rule);background:#fbf4e2;border-radius:3px;padding:10px;min-width:0}
+.lotcard .pic{width:96px;height:96px;display:grid;place-items:center}
+.lotcard .pic img{width:96px;height:96px;object-fit:contain}
+.lotcard b{font-family:var(--f-display);font-size:13.5px;letter-spacing:.05em;line-height:1.2}
+.lotcard small{font-size:15px;line-height:1.3;color:var(--ink2);flex:1}
+.annmark{display:grid;place-items:center;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff4c4,#e2b24a 60%,#8a6420);box-shadow:inset 0 0 0 4px #5a3c10,0 3px 8px #0005;font:700 36px Georgia,"Times New Roman",serif;color:#2a1d0e}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{border:1px solid var(--brass-d);background:#c9a24a26;border-radius:2px;padding:2px 8px;font-size:15px}
 @keyframes plq{from{opacity:0;transform:translateY(12px)}}
 .placard::before,.placard::after{content:"";position:absolute;top:9px;width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff3c4,#8a6420 70%);box-shadow:inset 0 0 0 1px #5a3c10}
 .placard::before{left:9px}.placard::after{right:9px}
@@ -294,7 +309,7 @@ button{font:inherit;color:inherit}
 </div>
 <div id="shop" class="shop" hidden>
   <header class="sign"><div><h2>The Curio Shoppe</h2><small>Fine curiosities &amp; chessmen · est. 1851</small></div><div class="spurse"><span class="coins"><i></i><i></i><i></i></span><div><small>Purse</small><b id="sMoney">£0</b></div></div></header>
-  <div id="sBody" class="sbody"><canvas id="shopGl"></canvas><div id="sTags" class="layer"></div><div id="sBubbles" class="layer"></div><div id="placard" class="placard" hidden></div></div>
+  <div id="sBody" class="sbody"><canvas id="shopGl"></canvas><div id="sTags" class="layer"></div><div id="sBubbles" class="layer"></div><div id="placard" class="placard" hidden></div><div id="lotSheet" class="lotsheet" hidden><div class="lotbox" id="lotBox"></div></div></div>
   <footer class="sfoot"><p><span class="cab">Cabinet · <span id="sCab">0 of 5</span></span><span id="sHint"></span></p><button id="sLeave" class="door" type="button">Leave the shop →</button></footer>
 </div>
 <div id="tip" class="tip" hidden></div>
@@ -677,6 +692,62 @@ const EDITIONS={
   gold:{name:'Gilded',desc:'Earn £2 whenever this piece captures.',cost:4,c:'#c9a45c'},
 };
 const RECRUIT_COST={P:2,N:5,B:5,R:7,Q:12};
+// Club charters: one on offer per event, bought once, kept for the whole run. `req` charters appear only after their first tier.
+const CHARTERS=[
+ {id:'clock1',name:'Extended Time Control',desc:'+2 moves in every game.'},
+ {id:'clock2',name:'Classical Time Control',req:'clock1',desc:'+3 more moves in every game.'},
+ {id:'disc1',name:'Club Membership',desc:'Everything in the Curio Shoppe costs 25% less.'},
+ {id:'disc2',name:'Life Membership',req:'disc1',desc:'Everything in the Curio Shoppe costs half price.'},
+ {id:'bank1',name:'Club Treasury',desc:'Interest at prize-giving can reach £10 instead of £5.'},
+ {id:'bank2',name:'Federation Bursary',req:'bank1',desc:'Interest at prize-giving can reach £20.'},
+ {id:'coach1',name:'Grandmaster Coaching',desc:'Every piece you own captures with +2 base Brilliance.'},
+ {id:'coach2',name:'Training Camp',req:'coach1',desc:'Every piece you own captures with +3 more base Brilliance.'},
+ {id:'scout1',name:'Opposition Scouting',desc:'Black plays less accurately.'},
+ {id:'scout2',name:'Home Preparation',req:'scout1',desc:'Black calculates one move less in Openings and Middlegames.'},
+ {id:'cabinet',name:'Glass-Fronted Cabinet',desc:'Your cabinet holds 6 curios instead of 5.'},
+ {id:'order',name:'Standing Order',desc:'New stock starts at £3 instead of £5.'},
+ {id:'preview',name:'Catalogue Preview',desc:'Lots offer 4 choices instead of 3.'},
+];
+const CHARTER_BY=Object.fromEntries(CHARTERS.map(c=>[c.id,c])), CHARTER_COST=10;
+const hasCharter=id=>!!run&&(run.charters||[]).includes(id);
+const price=c=>Math.max(1,Math.floor(c*(hasCharter('disc2')?.5:hasCharter('disc1')?.75:1)));
+const relicMax=()=>5+(hasCharter('cabinet')?1:0);
+const interestCap=()=>hasCharter('bank2')?20:hasCharter('bank1')?10:5;
+const baseMult=t=>MULT[t]+(hasCharter('coach1')?2:0)+(hasCharter('coach2')?3:0);
+function pickCharter(){const own=run.charters||[], pool=CHARTERS.filter(c=>!own.includes(c.id)&&(!c.req||own.includes(c.req))); return pool.length?rnd(pool).id:null;}
+// Annotations: chess annotation symbols your pieces can wear as a brass medal
+const ANNOT={
+ '!':{name:'Good Move',desc:'+8 Brilliance when this piece captures.'},
+ '!!':{name:'Brilliant Move',desc:"This piece's first capture each game gets ×3 Brilliance."},
+ '!?':{name:'Interesting Move',desc:'Gains +1 Brilliance for the rest of the run each time this piece captures.'},
+ '+':{name:'Check!',desc:'When this piece gives check: +50 Material and +4 Brilliance.'},
+};
+const ANN_KEYS=Object.keys(ANNOT);
+// Lots: open one, choose 1 of 3 (or skip)
+const LOTS={
+ auction:{name:'Auction Lot',cost:6,blurb:'A crate from a house sale, packed in straw. Choose one curio from it.'},
+ sealed:{name:'Sealed Move',cost:4,blurb:'An envelope sealed with wax. Choose an annotation, inlay or promotion for one of your pieces.'},
+ muster:{name:'Muster Roll',cost:4,blurb:'A roll of volunteers. Choose one recruit for an empty square on your board.'},
+};
+const lotSize=()=>3+(hasCharter('preview')?1:0);
+function mkLot(){const r=Math.random(), kind=r<.35?'auction':r<.75?'sealed':'muster'; return {kind,cost:LOTS[kind].cost,sold:false,opened:false,choices:null};}
+function genLotChoices(kind){
+  const n=lotSize(), out=[], seen=new Set();
+  if(kind==='auction'){const own=new Set(run.relics.map(r=>r.id)); return shuffle(RELICS.filter(r=>!own.has(r.id))).slice(0,n).map(r=>({kind:'curio',id:r.id,name:r.name,desc:relicDesc(r,{})}));}
+  for(let guard=0;out.length<n&&guard<200;guard++){let c;
+    if(kind==='sealed'){const r=Math.random();
+      if(r<.12&&run.army.some(d=>d&&RARE[d.type]&&!d.ab)) c={kind:'manual',name:'Field Manual',desc:'Teach one of your rare pieces its ability now, skipping its feat.'};
+      else if(r<.55){const a=rnd(ANN_KEYS); c={kind:'annotate',ann:a,name:`${a} ${ANNOT[a].name}`,desc:'Annotate a piece. '+ANNOT[a].desc};}
+      else if(r<.85){const e=rnd(Object.keys(EDITIONS)); c={kind:'enchant',ed:e,name:EDITIONS[e].name,desc:'Inlay a piece. '+EDITIONS[e].desc};}
+      else {const to=Math.random()<.2?'Q':rnd(['N','B','R']); c=to==='Q'?{kind:'promote',to,name:'Coronation',desc:'Turn any piece except your King into a Queen. Keeps its name.'}:{kind:'promote',to,name:'Underpromotion: '+PNAME[to],desc:`Turn one of your Pawns into a ${PNAME[to]}. Keeps its name.`};}
+    } else {
+      if(Math.random()<.12){const t=rnd(RARE_T); c={kind:'rare',type:t,name:'The '+RARE[t].name,desc:RARE[t].move};}
+      else {const t=rnd(['P','P','N','N','B','B','R','Q']), ed=Math.random()<.25?rnd(Object.keys(EDITIONS)):null, ann=Math.random()<.2?rnd(ANN_KEYS):null;
+        c={kind:'recruit',type:t,ed,ann,name:PNAME[t]+(ed?' · '+EDITIONS[ed].name:'')+(ann?' · '+ann:''),desc:`Joins your army on an empty square.${ed?' '+EDITIONS[ed].desc:''}${ann?' '+ann+' '+ANNOT[ann].desc:''}`};}
+    }
+    const key=JSON.stringify(c); if(seen.has(key)) continue; seen.add(key); out.push(c);}
+  return out;
+}
 function genWork(run,f){
   f=f||{};
   if(!f.rare&&Math.random()<.22){f.rare=1; const t=rnd(RARE_T), R=RARE[t]; return {kind:'rare',type:t,cost:R.cost,name:'The '+R.name,g:'',c:'#6a3a8a',desc:R.move};}
@@ -692,7 +763,7 @@ function genWork(run,f){
 function genShop(run){
   const owned=new Set(run.relics.map(r=>r.id));
   const pool=shuffle(RELICS.filter(r=>!owned.has(r.id)));
-  return {relics:pool.slice(0,2).map(r=>({id:r.id,sold:false})),work:(f=>[genWork(run,f),genWork(run,f),genWork(run,f)])({}),reroll:5};
+  return {relics:pool.slice(0,2).map(r=>({id:r.id,sold:false})),work:(f=>[genWork(run,f),genWork(run,f),genWork(run,f)])({}),reroll:hasCharter('order')?3:5,lots:[mkLot(),mkLot()]};
 }
 // ===================== SCENE =====================
 const stageEl=document.getElementById('stage'), canvas=document.getElementById('gl');
@@ -1088,6 +1159,21 @@ function addInlay(t){
     part(M,torG(br,.022),ED_TRIM.poly,[0,.065,0],null,flat,0); part(M,torG(cr+.005,.02),ED_TRIM.poly,[0,cy,0],null,flat,0);
     part(M,geo('gemO',()=>new THREE.OctahedronGeometry(.07,0)),ED_GEM,[0,.2,br-.03],[1,1.3,.6],null,0); }
 }
+// ---------- annotations: a brass medal on the front of the base, engraved with the symbol ----------
+const ANN_TEX={};
+function annTex(sym){
+  if(ANN_TEX[sym]) return ANN_TEX[sym];
+  const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d');
+  const gr=g.createRadialGradient(52,46,6,64,64,64); gr.addColorStop(0,'#fff4c4'); gr.addColorStop(.6,'#e2b24a'); gr.addColorStop(1,'#8a6420');
+  g.fillStyle=gr; g.beginPath(); g.arc(64,64,62,0,Math.PI*2); g.fill(); g.strokeStyle='#5a3c10'; g.lineWidth=5; g.beginPath(); g.arc(64,64,53,0,Math.PI*2); g.stroke();
+  g.fillStyle='#2a1d0e'; g.font=`700 ${sym.length>1?58:74}px Georgia, "Times New Roman", serif`; g.textAlign='center'; g.textBaseline='middle'; g.fillText(sym,64,69);
+  return ANN_TEX[sym]=new THREE.CanvasTexture(c);
+}
+function addAnnotation(t){
+  const br=BASER[t.type], g=new THREE.Group(); g.position.set(0,.11,br+.02); g.rotation.x=-.45; t.model.add(g);
+  const face=new THREE.Mesh(geo('annDisc',()=>new THREE.CircleGeometry(.12,28)),new THREE.MeshBasicMaterial({map:annTex(t.def.ann),transparent:true})); face.position.z=.012; g.add(face);
+  g.add(new THREE.Mesh(geo('annBack',()=>new THREE.CylinderGeometry(.125,.125,.02,28).rotateX(Math.PI/2)),ED_TRIM.gold));
+}
 function glint(t,cols){const s=t.root.scale.x, p=t.root.position.clone(); p.x+=(Math.random()-.5)*.5*s; p.z+=(Math.random()-.5)*.5*s; p.y+=(.15+Math.random()*.8)*t.h*s; burst(p,cols,1,.15,.035*s,.3,.55,0,t.scn,-99);}
 const MAT_W=toon('#f3e9d6'), MAT_B=toon('#3d2e4d');
 let toysAll=[];
@@ -1102,7 +1188,7 @@ class Toy{
     this.scn=(opt&&opt.scene)||scene; this.list=(opt&&opt.list)||toysAll; this.cam=(opt&&opt.cam)||null;
     this.mat=this.ed?ED_MAT[this.ed]:side==='w'?MAT_W:MAT_B;
     this.bossId=def.boss||null; if(this.bossId&&BOSS_LOOK[this.bossId]){const L=BOSS_LOOK[this.bossId]; this.mat=L.mat; this.noCrown=!!L.noCrown;}
-    buildModel(this); addInlay(this); if(this.bossId&&BOSS_LOOK[this.bossId]) BOSS_LOOK[this.bossId].build(this); this.buildFace(F);
+    buildModel(this); addInlay(this); if(side==='w'&&def.ann) addAnnotation(this); if(this.bossId&&BOSS_LOOK[this.bossId]) BOSS_LOOK[this.bossId].build(this); this.buildFace(F);
     this.root.traverse(o=>{o.userData.toy=this;});
     this.cur=Object.assign({},EXPR.idle); this.expr=null; this.exprUntil=0; this.mood=null;
     this.yaw=0; this.yawGoal=0; this.yawLock=0; this.sqz=1; this.look=null; this.lookUntil=0; this.wander={x:0,y:0,t:0};
@@ -1521,11 +1607,12 @@ function loadSave(){try{const s=localStorage.getItem(SAVE_KEY); return s?JSON.pa
 function clearSave(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
 function pickBosses(){const used=new Set(), out=[]; for(let a=1;a<=8;a++){const fin=a===8&&FINAL_BOSSES.length, pool=fin?FINAL_BOSSES:BOSSES.filter(b=>!used.has(b.id)&&(b.min||1)<=a), b=rnd(pool.length?pool:BOSSES); used.add(b.id); out.push(b.id);} return out;}
 function bossFor(a){if(!run.bosses[a-1]||!BOSS_BY[run.bosses[a-1]]) run.bosses[a-1]=rnd(BOSSES).id; return run.bosses[a-1];}
-function newRun(){run={ante:1,blind:0,money:4,army:startArmy(),relics:[],bosses:pickBosses(),stats:{best:0,bestLabel:'',caps:0,rounds:0,mates:0},endless:false,shop:null,phase:'blind',pending:null};}
+function newRun(){run={ante:1,blind:0,money:4,army:startArmy(),relics:[],bosses:pickBosses(),stats:{best:0,bestLabel:'',caps:0,rounds:0,mates:0},endless:false,shop:null,phase:'blind',pending:null,charters:[],charterOffer:null};}
 const slotSq=(i,side)=>side==='w'?(i<8?rc(0,i):rc(1,i-8)):(i<8?rc(7,i):rc(6,i-8));
 function movesFor(bi,boss){
-  if(bi===2) return BOSS_MOVES+(hasRelic('siege')?6:0)+(hasRelic('hourglass')?3:0)+((BOSS_BY[boss]&&BOSS_BY[boss].moves)||0);
-  return BASE_MOVES+(hasRelic('hourglass')?3:0);
+  const ch=(hasCharter('clock1')?2:0)+(hasCharter('clock2')?3:0);
+  if(bi===2) return BOSS_MOVES+ch+(hasRelic('siege')?6:0)+(hasRelic('hourglass')?3:0)+((BOSS_BY[boss]&&BOSS_BY[boss].moves)||0);
+  return BASE_MOVES+ch+(hasRelic('hourglass')?3:0);
 }
 
 // ---------- notation ----------
@@ -1576,8 +1663,8 @@ function hudIdle(){
 function renderRelics(){
   const el=$('relics'), rs=run?run.relics:[]; let h='';
   rs.forEach((r,i)=>{const d=RELIC_BY[r.id], th=curioThumb(r.id); h+=`<button type="button" class="relic" data-ri="${i}" aria-label="${d.name}">${th?`<img src="${th}" alt="">`:d.g+VS}</button>`;});
-  for(let i=rs.length;i<5;i++) h+='<div class="relic empty"></div>';
-  el.innerHTML=h; $('relicCount').textContent=rs.length+'/5';
+  for(let i=rs.length;i<relicMax();i++) h+='<div class="relic empty"></div>';
+  el.innerHTML=h; $('relicCount').textContent=rs.length+'/'+relicMax();
 }
 $('relics').addEventListener('click',e=>{const b=e.target.closest('.relic[data-ri]'); if(!b) return; const r=run.relics[+b.dataset.ri], d=RELIC_BY[r.id]; showTip(b,`<b>${d.name}</b>${relicDesc(d,r)}`);});
 function showTip(el,html){const t=$('tip'); t.innerHTML=html; t.hidden=false; const r=el.getBoundingClientRect(), tw=t.offsetWidth, th=t.offsetHeight;
@@ -1613,7 +1700,7 @@ const BG=[['#1c110a','#3e2516','#6a4024'],['#1e0d08','#4a1d12','#7a3a22'],['#0f0
 async function startRound(){
   hideScreen(); busy=true; initAudio();
   const bi=run.blind, bossId=bi===2?bossFor(run.ante):null;
-  RS={b:null,score:0,target:blindTarget(run.ante,bi),moves:movesFor(bi,bossId),streak:0,taken:0,lost:0,moveNo:0,boss:bossId,mateOnly:bi===2,turn:'w',sel:-1,legal:[],over:false,log:[],capW:[],capB:[],spec:[],trans:{},transNew:null,rallyCd:{},rallyFrom:null,rallyPre:null,lastMovedId:null};
+  RS={b:null,score:0,target:blindTarget(run.ante,bi),moves:movesFor(bi,bossId),streak:0,taken:0,lost:0,moveNo:0,boss:bossId,mateOnly:bi===2,turn:'w',sel:-1,legal:[],over:false,log:[],capW:[],capB:[],spec:[],trans:{},transNew:null,rallyCd:{},rallyFrom:null,rallyPre:null,lastMovedId:null,annFirst:{}};
   const key=run.ante+'-'+bi;
   const enemy=(run.pending&&run.pending.key===key)?run.pending.enemy:enemyArmy(run.ante,bi,bossId);
   const ki=enemy.findIndex(d=>d&&d.type==='K'); if(bossId&&ki>=0){enemy[ki].name=BOSS_BY[bossId].name; enemy[ki].boss=bossId;}
@@ -1692,10 +1779,10 @@ function select(sq){
 }
 function deselect(){if(!RS) return; RS.sel=-1; RS.legal=[]; RS.spec=[]; RS.rallyFrom=null; for(const M of marks){M.sel=false;M.move=false;M.cap=false;M.spec=false;} refreshMarks(); $('nameplate').hidden=true;}
 function showPlate(t){
-  const ed=t.ed?`<span class="tag">${EDITIONS[t.ed].name}</span>`:'';
+  const ed=(t.ed?`<span class="tag">${EDITIONS[t.ed].name}</span>`:'')+(t.side==='w'&&t.def.ann?`<span class="tag">${t.def.ann} ${ANNOT[t.def.ann].name}</span>`:'');
   const trait=t.side==='w'?PERSONA[t.type].trait:(t.boss&&RS&&RS.boss?BOSS_BY[RS.boss].desc:`Enemy ${PNAME[t.type].toLowerCase()}. Up to no good.`);
-  const line=t.type==='K'?(t.side==='w'?'Lose him and the run ends.':'Checkmate him to win the game.'):t.side==='w'?`Captures with <span class="num">${MULT[t.type]}</span> base Brilliance`:`Worth <span class="num">${CHIPS[t.type]}</span> Material`;
-  const el=$('nameplate'); el.innerHTML=`<h4>${t.side==='w'?glw(t.type):gl(t.type)} ${t.name} <span class="tag">${t.side==='w'?'your '+PNAME[t.type].toLowerCase():'enemy '+PNAME[t.type].toLowerCase()}</span>${ed}</h4><p>${trait}</p><p>${line}</p>${t.side==='w'&&RARE[t.type]?rareInfo(t):''}`; el.hidden=false;
+  const line=t.type==='K'?(t.side==='w'?'Lose him and the run ends.':'Checkmate him to win the game.'):t.side==='w'?`Captures with <span class="num">${baseMult(t.type)}</span> base Brilliance`:`Worth <span class="num">${CHIPS[t.type]}</span> Material`;
+  const el=$('nameplate'); el.innerHTML=`<h4>${t.side==='w'?glw(t.type):gl(t.type)} ${t.name} <span class="tag">${t.side==='w'?'your '+PNAME[t.type].toLowerCase():'enemy '+PNAME[t.type].toLowerCase()}</span>${ed}</h4><p>${trait}</p><p>${line}</p>${t.side==='w'&&t.def.ann?`<p class="rare"><b>${t.def.ann} ${ANNOT[t.def.ann].name}:</b> ${ANNOT[t.def.ann].desc}</p>`:''}${t.side==='w'&&RARE[t.type]?rareInfo(t):''}`; el.hidden=false;
 }
 
 // ---------- moves ----------
@@ -1755,8 +1842,8 @@ async function playerMove(m){
     await enemyTurn();
   }catch(err){console.error(err); animating=false; busy=false; if(RS) RS.turn='w'; setTurn('Your move','w');}
 }
-function aiDepth(){let d=run.ante<=1?1:run.ante<=4?2:3; if(RS.boss==='tyrant') d=Math.min(3,d+1); return d;}
-function aiNoise(){const n=[140,60,30,18,10,6,4,2][Math.min(7,run.ante-1)]; return RS.boss?n*.5:n;}
+function aiDepth(){let d=run.ante<=1?1:run.ante<=4?2:3; if(RS.boss==='tyrant') d=Math.min(3,d+1); if(hasCharter('scout2')&&!RS.mateOnly) d=Math.max(1,d-1); return d;}
+function aiNoise(){const n=[140,60,30,18,10,6,4,2][Math.min(7,run.ante-1)]; return (RS.boss?n*.5:n)*(hasCharter('scout1')?1.8:1);}
 async function enemyTurn(){
   RS.turn='b'; setTurn('Waiting for Black…','b'); thaw(); unlockAll();
   const ek=toys[kingSq(RS.b,-1)]; if(ek) ek.setExpr('smug',1.2);
@@ -1793,7 +1880,7 @@ function updateThreats(){
 // ---------- scoring ----------
 async function scoreEvent(att,vt,check,entry){
   const at=att.type, cap=!!vt, pos=att.head();
-  const S={chips:cap?CHIPS[vt]:0,mult:MULT[at]}; let row=0;
+  const S={chips:cap?CHIPS[vt]:0,mult:baseMult(at)}; let row=0;
   if(cap){RS.taken++; run.stats.caps++;}
   const label=cap?`${PNAME[at]} takes ${PNAME[vt].toLowerCase()}`:`${PNAME[at]} gives check`;
   calcSet(S.chips,S.mult,label);
@@ -1809,6 +1896,11 @@ async function scoreEvent(att,vt,check,entry){
     if(att.ed==='poly'){S.mult*=1.5; await step('Glass ×1.5 Brilliance','xmult','cMult','xmult');}
     if(att.ed==='gold'){run.money+=2; await step('Gilded +£2','money',null,'coin');}
   }
+  const ann=att.side==='w'&&att.def?att.def.ann:null;
+  if(ann==='!'&&cap){S.mult+=8; await step('! Good Move +8 Brilliance','mult','cMult','mult');}
+  if(ann==='!!'&&cap&&!RS.annFirst[att.def.id]){RS.annFirst[att.def.id]=1; S.mult*=3; await step('!! Brilliant Move ×3 Brilliance','xmult','cMult','xmult');}
+  if(ann==='!?'&&cap){att.def.annV=(att.def.annV||0)+1; S.mult+=att.def.annV; await step(`!? Interesting Move +${att.def.annV} Brilliance`,'mult','cMult','mult');}
+  if(ann==='+'&&check){S.chips+=50; S.mult+=4; await step('+ Check! +50 Material, +4 Brilliance','chips','cChips');}
   const kq=kingSq(RS.b,1), ac=att.cell;
   const ctx={cap,at,vt,check,run,st:RS,mine:countSide(1),theirs:countSide(-1),pawns:countType(P),nearKing:cap&&kq>=0&&ac>=0&&Math.max(Math.abs((kq>>3)-(ac>>3)),Math.abs((kq&7)-(ac&7)))<=1};
   for(let i=0;i<run.relics.length;i++){
@@ -2162,11 +2254,12 @@ function removeVine(s,trample){
 function clearVines(){for(const f of vineFx) scene.remove(f.g); vineFx=[]; if(RS) RS.vines=[];}
 frameHooks.push(()=>{for(const f of vineFx){f.g.rotation.y=Math.sin(clock*.8+f.s)*.08; f.fl.position.y=.52+Math.sin(clock*2+f.s)*.02;}});
 // ===================== THE CURIO SHOPPE =====================
-const sScene=new THREE.Scene(), sCam=new THREE.PerspectiveCamera(32,1,.1,120), sTarget=V3(0,3.75,.2);
+const sScene=new THREE.Scene(), sCam=new THREE.PerspectiveCamera(32,1,.1,120), sTarget=V3(0,4.9,.2);
 const shopEl=$('shop'), shopCanvas=$('shopGl'), sBody=$('sBody'), sTagsEl=$('sTags'), sBubEl=$('sBubbles'), placardEl=$('placard');
-let shopR=null, sBuilt=false, sToys=[], sItems=[], armyToys=new Array(16).fill(null), tiles=[], cloches=[], sMotes=null, sBubs=[];
+let sStands=null, sLot=null, shopR=null, sBuilt=false, sToys=[], sItems=[], armyToys=new Array(16).fill(null), tiles=[], cloches=[], sMotes=null, sBubs=[];
 let sHover=null, sSel=null, sPending=null, sSwap=-1, sLook=null, busyShop=false, hintT=0;
-const TS=.72, ARMY_S=.72, ARMY_Y=.055, BOARD_Z=1.2, SHELF={own:6.6,cur:4.3,work:2.0}, SLOT_X=[-2.2,0,2.2], OWN_X=[-2.2,-1.1,0,1.1,2.2], ITEM_Z=-.15;
+const TS=.72, ARMY_S=.72, ARMY_Y=.055, BOARD_Z=1.2, SHELF={lots:8.9,own:6.6,cur:4.3,work:2.0}, SLOT_X=[-2.2,0,2.2], ITEM_Z=-.15;
+const ownX=(i,n)=>-2.2+i*4.4/Math.max(1,(n||relicMax())-1);
 const tilePos=i=>V3(((i&7)-3.5)*TS,ARMY_Y,BOARD_Z+(i<8?TS/2:-TS/2));
 
 // ---------- materials ----------
@@ -2345,12 +2438,12 @@ function buildShopRoom(){
     g.fillStyle='#521f26'; g.strokeStyle='#62292c'; g.lineWidth=3; damask(g,64,64); damask(g,192,192); damask(g,192,-64); damask(g,-64,192); damask(g,320,192); damask(g,192,320);});
   wall.repeat.set(5,4.5);
   const back=new THREE.Mesh(new THREE.PlaneGeometry(18,15),new THREE.MeshToonMaterial({map:wall,gradientMap:gradTex})); back.position.set(0,4,-1.3); sScene.add(back);
-  const velvet=new THREE.Mesh(new THREE.PlaneGeometry(7,7.8),toon('#1f3d2e')); velvet.position.set(0,3.85,-1.18); velvet.receiveShadow=true; sScene.add(velvet);
+  const velvet=new THREE.Mesh(new THREE.PlaneGeometry(7,10.1),toon('#1f3d2e')); velvet.position.set(0,5,-1.18); velvet.receiveShadow=true; sScene.add(velvet);
   const wood=new THREE.MeshToonMaterial({map:woodTex('#3a2114',[1,1]),gradientMap:gradTex}), wood2=new THREE.MeshToonMaterial({map:woodTex('#4a2c1a',[2,1]),gradientMap:gradTex}), brassM=metal(C.brass,80);
-  for(const s of [-1,1]){boxM(.55,8.3,2.1,wood,[s*3.78,3.6,-.15]); boxM(.72,.16,2.26,brassM,[s*3.78,7.62,-.15]); boxM(.72,.12,2.26,brassM,[s*3.78,.06,-.15]);}
-  boxM(8.4,.5,2.3,wood,[0,7.95,-.1]); boxM(8.6,.08,2.4,brassM,[0,7.68,-.1]);
-  for(const y of [SHELF.own,SHELF.cur,SHELF.work]){boxM(7,.16,1.9,wood2,[0,y-.08,-.2]); boxM(7,.06,.05,brassM,[0,y-.05,.76]);}
-  plaque('Your Cabinet',1.5,[0,SHELF.own-.1,.8]); plaque('Curiosities',1.5,[0,SHELF.cur-.1,.8]); plaque('The Workshop',1.5,[0,SHELF.work-.1,.8]);
+  for(const s of [-1,1]){boxM(.55,10.6,2.1,wood,[s*3.78,4.75,-.15]); boxM(.72,.16,2.26,brassM,[s*3.78,9.92,-.15]); boxM(.72,.12,2.26,brassM,[s*3.78,.06,-.15]);}
+  boxM(8.4,.5,2.3,wood,[0,10.25,-.1]); boxM(8.6,.08,2.4,brassM,[0,9.98,-.1]);
+  for(const y of [SHELF.lots,SHELF.own,SHELF.cur,SHELF.work]){boxM(7,.16,1.9,wood2,[0,y-.08,-.2]); boxM(7,.06,.05,brassM,[0,y-.05,.76]);}
+  plaque('Lots & Charters',1.5,[0,SHELF.lots-.1,.8]); plaque('Your Cabinet',1.5,[0,SHELF.own-.1,.8]); plaque('Curiosities',1.5,[0,SHELF.cur-.1,.8]); plaque('The Workshop',1.5,[0,SHELF.work-.1,.8]);
   boxM(9,1.4,2.6,wood,[0,-.74,.95]); boxM(9.2,.08,2.75,wood2,[0,-.04,.95]); plaque('Your Army',1.6,[0,-.42,2.26]);
   boxM(8*TS+.24,.04,2*TS+.24,brassM,[0,.01,BOARD_Z]);
   for(let i=0;i<16;i++){const p=tilePos(i), dark=(((i<8?0:1)+(i&7))%2)===0;
@@ -2366,8 +2459,6 @@ function buildShopRoom(){
     sScene.add(g); cloches[i]=g;}
   // marble pedestals for the workshop
   for(const x of SLOT_X) part(sScene,lathe('c_ped',[[0,0],[.34,0],[.34,.06],[.26,.1],[.22,.12],[.22,.26],[.28,.3],[.3,.34],[0,.34]]),cmat('#e6dfd0'),[x,SHELF.work,ITEM_Z]);
-  // brass stands in your cabinet
-  for(const x of OWN_X) part(sScene,cyl(.26,.3,.06,20),metal(C.brass,80),[x,SHELF.own+.03,ITEM_Z],null,null,0);
   // the service bell rerolls the stock
   const bell=new THREE.Group(); part(bell,cyl(.3,.32,.08,20),cmat(C.dwood),[0,.04,0]);
   part(bell,lathe('c_sbell',[[0,.42],[.06,.41],[.18,.34],[.25,.2],[.28,.1],[.3,.08],[0,.08]]),metal(C.brass,110)); part(bell,cyl(.025,.025,.08,8),metal(C.silver,90),[0,.46,0],null,null,0); part(bell,sph(.045),metal(C.silver,90),[0,.51,0],null,null,0);
@@ -2375,12 +2466,12 @@ function buildShopRoom(){
   // light
   sScene.add(new THREE.HemisphereLight(0xffe2c0,0x2a160c,.6));
   const key=new THREE.DirectionalLight(0xfff0d8,.55); key.position.set(-3,10,9); key.castShadow=true; key.shadow.mapSize.set(1024,1024);
-  Object.assign(key.shadow.camera,{left:-5,right:5,top:9,bottom:-2,near:1,far:30}); key.shadow.camera.updateProjectionMatrix(); key.shadow.bias=-.001;
-  key.target.position.set(0,3,0); sScene.add(key,key.target);
-  for(const y of [SHELF.own+1,SHELF.cur+1.9,SHELF.work+1.9]){const pl=new THREE.PointLight(0xffc880,.75,6.5,1.6); pl.position.set(0,y,.5); sScene.add(pl);}
+  Object.assign(key.shadow.camera,{left:-5,right:5,top:11.5,bottom:-2,near:1,far:32}); key.shadow.camera.updateProjectionMatrix(); key.shadow.bias=-.001;
+  key.target.position.set(0,4.2,0); sScene.add(key,key.target);
+  for(const y of [SHELF.lots+1.1,SHELF.own+1,SHELF.cur+1.9,SHELF.work+1.9]){const pl=new THREE.PointLight(0xffc880,.75,6.5,1.6); pl.position.set(0,y,.5); sScene.add(pl);}
   const beamM=new THREE.MeshBasicMaterial({color:0xffd9a0,transparent:true,opacity:.055,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide});
-  for(const [y,top] of [[SHELF.cur,SHELF.own-.16],[SHELF.work,SHELF.cur-.16]]) for(const x of SLOT_X){const hgt=top-y, m=new THREE.Mesh(new THREE.ConeGeometry(.8,hgt,24,1,true),beamM); m.position.set(x,y+hgt/2,ITEM_Z); sScene.add(m);}
-  const N=110, mp=new Float32Array(N*3); for(let i=0;i<N;i++) mp.set([(Math.random()-.5)*6.6,Math.random()*7.6,-1+Math.random()*2.6],i*3);
+  for(const [y,top] of [[SHELF.lots,9.84],[SHELF.cur,SHELF.own-.16],[SHELF.work,SHELF.cur-.16]]) for(const x of SLOT_X){const hgt=top-y, m=new THREE.Mesh(new THREE.ConeGeometry(.8,hgt,24,1,true),beamM); m.position.set(x,y+hgt/2,ITEM_Z); sScene.add(m);}
+  const N=110, mp=new Float32Array(N*3); for(let i=0;i<N;i++) mp.set([(Math.random()-.5)*6.6,Math.random()*9.9,-1+Math.random()*2.6],i*3);
   const mg=new THREE.BufferGeometry(); mg.setAttribute('position',new THREE.BufferAttribute(mp,3));
   sMotes=new THREE.Points(mg,new THREE.PointsMaterial({color:0xffe2a8,size:.035,transparent:true,opacity:.6,depthWrite:false,blending:THREE.AdditiveBlending})); sScene.add(sMotes);
 }
@@ -2392,7 +2483,7 @@ function removeItem(it){const k=sItems.indexOf(it); if(k>=0) sItems.splice(k,1);
 function clearItems(pred){for(const it of sItems.slice()) if(pred(it)) removeItem(it);}
 function soldSlot(kind,i,base,off){const it=addItem(kind,i,null,base,{sold:true,tagOff:off}); it.tag=mkTag(it); return it;}
 const workType=w=>w.kind==='recruit'||w.kind==='rare'?w.type:w.kind==='promote'?w.to:{foil:'R',holo:'Q',poly:'B',gold:'K'}[w.ed];
-const kindLabel=w=>w.kind==='enchant'?'Inlay':w.kind==='recruit'?'Recruit':w.kind==='rare'?'Rare piece':w.kind==='manual'?'Training':'Promotion';
+const kindLabel=w=>w.kind==='annotate'?'Annotation':w.kind==='enchant'?'Inlay':w.kind==='recruit'?'Recruit':w.kind==='rare'?'Rare piece':w.kind==='manual'?'Training':'Promotion';
 function buildStock(drop){
   clearItems(it=>it.kind==='curio'||it.kind==='work');
   const S=run.shop;
@@ -2414,7 +2505,9 @@ function buildStock(drop){
 }
 function buildOwned(){
   clearItems(it=>it.kind==='owned');
-  run.relics.forEach((r,i)=>{const g=new THREE.Group(), anim=buildCurio(r.id,g); g.scale.setScalar(.62); sScene.add(g); addItem('owned',i,g,V3(OWN_X[i],SHELF.own+.06,ITEM_Z),{anim,id:r.id});});
+  if(sStands) sScene.remove(sStands); sStands=new THREE.Group(); sScene.add(sStands); const n=relicMax();
+  for(let i=0;i<n;i++) part(sStands,cyl(.26,.3,.06,20),metal(C.brass,80),[ownX(i,n),SHELF.own+.03,ITEM_Z],null,null,0);
+  run.relics.forEach((r,i)=>{const g=new THREE.Group(), anim=buildCurio(r.id,g); g.scale.setScalar(.62); sScene.add(g); addItem('owned',i,g,V3(ownX(i,n),SHELF.own+.06,ITEM_Z),{anim,id:r.id});});
 }
 function mkArmyToy(i){const t=new Toy(run.army[i],'w',false,{scene:sScene,list:sToys,cam:sCam}); t.slot=i; t.root.position.copy(tilePos(i)); t.root.scale.setScalar(ARMY_S); return t;}
 function buildArmy(){for(const t of armyToys) if(t) t.dispose(); armyToys=new Array(16).fill(null); for(let i=0;i<16;i++) if(run.army[i]) armyToys[i]=mkArmyToy(i);}
@@ -2422,12 +2515,13 @@ function dropIn(it,delay){it.dropY=4; wait(delay||0).then(()=>tween(.45,e=>{it.d
 function refreshTags(){
   const S=run.shop;
   for(const it of sItems){ if(!it.tag) continue; const inner=it.tag.firstChild;
-    if(it.sold){inner.innerHTML='<span class="stamp">Sold</span>'; it.tag.classList.remove('poor'); continue;}
-    const cost=it.kind==='curio'?RELIC_BY[S.relics[it.i].id].cost:it.kind==='work'?S.work[it.i].cost:S.reroll;
-    const lab=it.kind==='curio'?'curio':it.kind==='work'?kindLabel(S.work[it.i]).toLowerCase():'new stock';
+    if(it.sold){inner.innerHTML=`<span class="stamp">${it.kind==='charter'?'Granted':it.kind==='lot'?'Opened':'Sold'}</span>`; it.tag.classList.remove('poor'); continue;}
+    if(it.kind==='lot'&&S.lots[it.i].opened){inner.innerHTML='<b>Open</b><small>tap to choose</small>'; it.tag.classList.remove('poor'); continue;}
+    const cost=price(it.kind==='curio'?RELIC_BY[S.relics[it.i].id].cost:it.kind==='work'?S.work[it.i].cost:it.kind==='lot'?S.lots[it.i].cost:it.kind==='charter'?CHARTER_COST:S.reroll);
+    const lab=it.kind==='curio'?'curio':it.kind==='work'?kindLabel(S.work[it.i]).toLowerCase():it.kind==='lot'?LOTS[S.lots[it.i].kind].name.toLowerCase():it.kind==='charter'?'club charter':'new stock';
     inner.innerHTML=`<b>£${cost}</b><small>${lab}</small>`; it.tag.classList.toggle('poor',run.money<cost);}
 }
-function refreshShopHud(){$('sMoney').textContent='£'+run.money; $('sCab').textContent=run.relics.length+' of 5'; refreshTags();}
+function refreshShopHud(){$('sMoney').textContent='£'+run.money; $('sCab').textContent=run.relics.length+' of '+relicMax(); refreshTags();}
 function sSay(t,text,dur){if(!t||!t.alive) return; sBubs=sBubs.filter(b=>{if(b.t===t){b.el.remove(); return false;} return true;});
   if(sBubs.length>=3){const o=sBubs.shift(); o.el.remove();}
   const el=document.createElement('div'); el.className='bubble'; el.textContent=text; sBubEl.appendChild(el); sBubs.push({t,el,until:clock+(dur||1.9)});}
@@ -2448,23 +2542,31 @@ function openPlacard(html,where){placardEl.innerHTML=html; placardEl.hidden=fals
 function closePlacard(){placardEl.hidden=true; sSel=null;}
 function inspect(it){
   const S=run.shop; sSel=it; sfx('select');
-  if(it.kind==='curio'){const r=S.relics[it.i], d=RELIC_BY[r.id], full=run.relics.length>=5;
+  if(it.kind==='lot'){const L=S.lots[it.i], D=LOTS[L.kind];
+    if(L.opened){closePlacard(); return openLot(it);}
+    openPlacard(`<span class="k">Lot · choose 1 of ${lotSize()}</span><h3>${D.name}</h3><p>${D.blurb}</p>
+      <div class="row"><button class="btn sm" data-pa="lot" type="button" ${run.money<price(L.cost)?'disabled':''}>Open for £${price(L.cost)}</button><button class="btn sm ghostb" data-pa="close" type="button">Close</button></div>`); return;}
+  if(it.kind==='charter'){const c=CHARTER_BY[run.charterOffer.id];
+    openPlacard(`<span class="k">Club charter · lasts the whole run</span><h3>${c.name}</h3><p>${c.desc}</p><p class="pnote soft">One charter is offered at each event.</p>
+      <div class="row"><button class="btn sm" data-pa="charter" type="button" ${run.money<price(CHARTER_COST)?'disabled':''}>Sign for £${price(CHARTER_COST)}</button><button class="btn sm ghostb" data-pa="close" type="button">Close</button></div>`); return;}
+  if(it.kind==='curio'){const r=S.relics[it.i], d=RELIC_BY[r.id], full=run.relics.length>=relicMax();
     openPlacard(`<span class="k">Curio for sale</span><h3>${d.name}</h3><p>${relicDesc(d,r)}</p>${full?'<p class="pnote">Your cabinet is full. Sell a curio first.</p>':''}
-      <div class="row"><button class="btn sm" data-pa="buy" type="button" ${run.money<d.cost||full?'disabled':''}>Buy for £${d.cost}</button><button class="btn sm ghostb" data-pa="close" type="button">Close</button></div>`);}
+      <div class="row"><button class="btn sm" data-pa="buy" type="button" ${run.money<price(d.cost)||full?'disabled':''}>Buy for £${price(d.cost)}</button><button class="btn sm ghostb" data-pa="close" type="button">Close</button></div>`);}
   else if(it.kind==='owned'){const r=run.relics[it.i], d=RELIC_BY[r.id], v=Math.max(1,Math.floor(d.cost/2));
     openPlacard(`<span class="k">In your cabinet</span><h3>${d.name}</h3><p>${relicDesc(d,r)}</p>
       <div class="row"><button class="btn sm" data-pa="sell" type="button">Sell for £${v}</button><button class="btn sm ghostb" data-pa="close" type="button">Close</button></div>`);}
   else if(it.kind==='work'&&S.work[it.i].kind==='rare'){const w=S.work[it.i], R=RARE[w.type];
     openPlacard(`<span class="k">Rare piece · only sold here</span><h3>${w.name}</h3><p>${R.move}</p><p><b>${R.ab}:</b> ${R.abDesc}</p><p class="pnote soft">Unlock the ability: ${R.feat}.</p>
-      <div class="row"><button class="btn sm" data-pa="use" type="button" ${run.money<w.cost?'disabled':''}>Buy for £${w.cost}</button><button class="btn sm ghostb" data-pa="close" type="button">Close</button></div>`);
+      <div class="row"><button class="btn sm" data-pa="use" type="button" ${run.money<price(w.cost)?'disabled':''}>Buy for £${price(w.cost)}</button><button class="btn sm ghostb" data-pa="close" type="button">Close</button></div>`);
     it.toy.setExpr('happy',1.4); sSay(it.toy,rnd(PERSONA[w.type].sel));}
   else if(it.kind==='work'){const w=S.work[it.i];
     openPlacard(`<span class="k">${kindLabel(w)}</span><h3>${w.name}</h3><p>${w.desc}</p>
-      <div class="row"><button class="btn sm" data-pa="use" type="button" ${run.money<w.cost?'disabled':''}>Buy for £${w.cost}</button><button class="btn sm ghostb" data-pa="close" type="button">Close</button></div>`);
+      <div class="row"><button class="btn sm" data-pa="use" type="button" ${run.money<price(w.cost)?'disabled':''}>Buy for £${price(w.cost)}</button><button class="btn sm ghostb" data-pa="close" type="button">Close</button></div>`);
     if(it.toy){it.toy.setExpr('happy',1.4); sSay(it.toy,w.kind==='recruit'?rnd(['Hire me!','I work for snacks!','Pick me, pick me!']):w.kind==='enchant'?rnd(['Fancy, isn\'t it?','Feel the craftsmanship.','Very exclusive.']):rnd(['This could be you!','Glow-up time?','Rise in the ranks!']));}}
 }
 function inspectPiece(i){const d=run.army[i], t=armyToys[i];
-  const R=RARE[d.type], rare=R?`<p><b>${R.ab}${d.ab?'':' (locked)'}:</b> ${R.abDesc}</p>${d.ab?'':`<p class="pnote soft">Unlock: ${R.feat} (${Math.min(d.fp||0,R.goal)}/${R.goal}).</p>`}`:'';
+  const annP=d.ann?`<p><b>${d.ann} ${ANNOT[d.ann].name}:</b> ${ANNOT[d.ann].desc}${d.ann==='!?'&&d.annV?` Now +${d.annV}.`:''}</p>`:'';
+  const R=RARE[d.type], rare=annP+R?`<p><b>${R.ab}${d.ab?'':' (locked)'}:</b> ${R.abDesc}</p>${d.ab?'':`<p class="pnote soft">Unlock: ${R.feat} (${Math.min(d.fp||0,R.goal)}/${R.goal}).</p>`}`:'';
   openPlacard(`<span class="k">Your ${PNAME[d.type]}${d.ed?' · '+EDITIONS[d.ed].name:''}</span><h3>${d.name}</h3><p>${PERSONA[d.type].trait}</p>${R?`<p>${R.move}</p>`:''}${rare}<p class="pnote soft">Tap another square on your board to swap places.</p>
     <div class="row"><button class="btn sm ghostb" data-pa="close" type="button">Put down</button></div>`,'top');
   if(t){t.setExpr('happy',1.2); sSay(t,rnd(PERSONA[d.type].sel));}}
@@ -2474,6 +2576,9 @@ placardEl.addEventListener('click',e=>{const b=e.target.closest('[data-pa]'); if
   else if(a==='buy'&&sSel) buyCurio(sSel);
   else if(a==='sell'&&sSel) sellOwned(sSel);
   else if(a==='use'&&sSel) beginWork(sSel);
+  else if(a==='lot'&&sSel) buyLot(sSel);
+  else if(a==='charter'&&sSel) buyCharter(sSel);
+  else if(a==='back'){sPending=null; clearHighlights(); closePlacard(); renderLotSheet();}
 });
 
 // ---------- actions ----------
@@ -2482,14 +2587,15 @@ function validTarget(item,i){const d=run.army[i];
   if(item.kind==='manual') return !!d&&!!RARE[d.type]&&!d.ab;
   if(item.kind==='promote') return !!d&&(item.to==='Q'?d.type!=='K'&&d.type!=='Q':d.type==='P');
   if(item.kind==='enchant') return !!d&&d.ed!==item.ed;
+  if(item.kind==='annotate') return !!d&&d.ann!==item.ann;
   return false;}
 async function buyCurio(it){
   const S=run.shop, r=S.relics[it.i], d=RELIC_BY[r.id];
-  if(run.relics.length>=5) return note('Your cabinet is full. Sell a curio first.');
-  if(run.money<d.cost) return note('Not enough in your purse.');
-  busyShop=true; run.money-=d.cost; r.sold=true; run.relics.push({id:r.id}); save(); sfx('buy'); closePlacard();
+  if(run.relics.length>=relicMax()) return note('Your cabinet is full. Sell a curio first.');
+  if(run.money<price(d.cost)) return note('Not enough in your purse.');
+  busyShop=true; run.money-=price(d.cost); r.sold=true; run.relics.push({id:r.id}); save(); sfx('buy'); closePlacard();
   const k=sItems.indexOf(it); if(k>=0) sItems.splice(k,1); if(it.tag) it.tag.remove(); soldSlot('curio',it.i,it.base,it.tagOff); refreshShopHud();
-  const cl=cloches[it.i], to=V3(OWN_X[run.relics.length-1],SHELF.own+.06,ITEM_Z), from=it.obj.position.clone(), s0=it.obj.scale.x;
+  const cl=cloches[it.i], to=V3(ownX(run.relics.length-1),SHELF.own+.06,ITEM_Z), from=it.obj.position.clone(), s0=it.obj.scale.x;
   await tween(.3,e=>{cl.position.y=cl.userData.y0+e*1.3;},Ez.out);
   await tween(.75,(e,p)=>{it.obj.position.lerpVectors(from,to,e); it.obj.position.y+=Math.sin(Math.PI*p)*1.1; it.obj.scale.setScalar(s0+(.62-s0)*e); it.obj.rotation.y+=.15;},Ez.io);
   sScene.remove(it.obj); buildOwned(); sBurst(to.clone().add(V3(0,.3,0)),['#ecd08a','#ffffff','#c9a24a'],16,SHELF.own+.05); sfx('coin');
@@ -2503,14 +2609,16 @@ function sellOwned(it){
 }
 function beginWork(it){
   const w=run.shop.work[it.i];
-  if(run.money<w.cost) return note('Not enough in your purse.');
+  if(run.money<price(w.cost)) return note('Not enough in your purse.');
   if(!run.army.some((_,k)=>validTarget(w,k))) return note(w.kind==='recruit'||w.kind==='rare'?'There is no empty square on your board.':w.kind==='manual'?'None of your rare pieces need training.':'None of your pieces can take that.');
   if(sSwap>=0) dropSwap();
   sPending={it,w};
-  openPlacard(`<span class="k">${kindLabel(w)} · £${w.cost}</span><h3>${w.name}</h3><p>Choose a glowing square on your board.</p><div class="row"><button class="btn sm ghostb" data-pa="cancel" type="button">Cancel</button></div>`,'top');
+  openPlacard(`<span class="k">${kindLabel(w)} · £${price(w.cost)}</span><h3>${w.name}</h3><p>Choose a glowing square on your board.</p><div class="row"><button class="btn sm ghostb" data-pa="cancel" type="button">Cancel</button></div>`,'top');
+  showTargets(w); setHint();
+}
+function showTargets(w){
   for(const tl of tiles) tl.userData.hl=validTarget(w,tl.userData.tile);
   const keen=armyToys.filter((t,i)=>t&&validTarget(w,i)); keen.forEach((t,k)=>{t.setExpr('happy',2); wait(k*.06).then(()=>hopArmy(t));}); if(keen.length) sSay(rnd(keen),rnd(['Me! Pick me!','Ooh, ooh!','I deserve it!']));
-  setHint();
 }
 function clearHighlights(){for(const tl of tiles) tl.userData.hl=false;}
 function hopArmy(t){if(t.hopping) return; t.hopping=true; const y0=t.root.position.y; return tween(.26,(e,p)=>{t.root.position.y=y0+Math.sin(Math.PI*p)*.28;},Ez.lin).then(()=>{t.root.position.y=y0; t.hopping=false;});}
@@ -2521,20 +2629,20 @@ async function orb(from,to,color){
   sScene.remove(m); sBurst(to.clone(),[color,'#ffffff','#ecd08a'],24,ARMY_Y);
 }
 async function applyWork(slot){
-  const {it,w}=sPending; sPending=null; clearHighlights(); closePlacard(); busyShop=true;
-  run.money-=w.cost; w.sold=true; save(); refreshShopHud();
+  const {it,w,lot}=sPending; sPending=null; clearHighlights(); closePlacard(); busyShop=true;
+  if(!lot){run.money-=price(w.cost); w.sold=true;} save(); refreshShopHud();
   const col=w.kind==='enchant'?EDITIONS[w.ed].c:'#ecd08a';
   await orb(it.obj.position.clone().add(V3(0,.7,0)),tilePos(slot).add(V3(0,.45,0)),col);
-  removeItem(it); soldSlot('work',it.i,it.base,it.tagOff); refreshTags();
+  if(lot) finishLot(); else {removeItem(it); soldSlot('work',it.i,it.base,it.tagOff);} refreshTags();
   if(w.kind==='recruit'||w.kind==='rare'){
-    run.army[slot]=w.kind==='rare'?{id:UID++,type:w.type,name:rnd(PERSONA[w.type].names),ed:null,ab:false,fp:0}:mkDef(w.type,'w'); uniqNames(run.army); const t=mkArmyToy(slot); armyToys[slot]=t; t.root.position.y=3;
+    run.army[slot]=w.kind==='rare'?{id:UID++,type:w.type,name:rnd(PERSONA[w.type].names),ed:null,ab:false,fp:0}:mkDef(w.type,'w'); if(w.ed) run.army[slot].ed=w.ed; if(w.ann) run.army[slot].ann=w.ann; uniqNames(run.army); const t=mkArmyToy(slot); armyToys[slot]=t; t.root.position.y=3;
     await tween(.4,e=>{t.root.position.y=3-(3-ARMY_Y)*e;},Ez.in); t.sqz=.6; sfx('land'); tween(.2,e=>{t.sqz=.6+.4*e;},Ez.back);
     t.setExpr('happy',1.6); sSay(t,w.kind==='rare'?rnd(PERSONA[w.type].sel):'Reporting for duty!');
   } else {
-    if(w.kind==='promote') run.army[slot].type=w.to; else if(w.kind==='manual') run.army[slot].ab=true; else run.army[slot].ed=w.ed;
+    if(w.kind==='promote') run.army[slot].type=w.to; else if(w.kind==='manual') run.army[slot].ab=true; else if(w.kind==='annotate'){run.army[slot].ann=w.ann; run.army[slot].annV=0;} else run.army[slot].ed=w.ed;
     const old=armyToys[slot]; if(old) old.dispose();
     const t=mkArmyToy(slot); armyToys[slot]=t; t.sqz=.3; sfx('promote'); sBurst(t.root.position.clone().add(V3(0,.4,0)),[col,'#ffffff'],20,ARMY_Y); await tween(.35,e=>{t.sqz=.3+.7*e;},Ez.back);
-    t.setExpr('love',1.8); sSay(t,w.kind==='manual'?`I learned ${RARE[t.type].ab}!`:w.kind==='promote'?(w.to==='Q'?'Fabulous. Finally.':'Promoted!!'):rnd(['Ooh, how refined!','I feel expensive.','Look at me!','Do I sparkle?']));
+    t.setExpr('love',1.8); sSay(t,w.kind==='annotate'?rnd(['Annotated!','Put that in the book!','Two exclamation marks? For me?']):w.kind==='manual'?`I learned ${RARE[t.type].ab}!`:w.kind==='promote'?(w.to==='Q'?'Fabulous. Finally.':'Promoted!!'):rnd(['Ooh, how refined!','I feel expensive.','Look at me!','Do I sparkle?']));
   }
   save(); busyShop=false; setHint();
 }
@@ -2554,10 +2662,135 @@ function tapSlot(slot){
 }
 async function reroll(it){
   const S=run.shop; it.wob=.35; tone(1568,.7,'sine',.09); tone(2350,.5,'sine',.035,1,.01);
-  if(run.money<S.reroll) return note(`New stock costs £${S.reroll}. Your purse is short.`);
-  busyShop=true; run.money-=S.reroll; const n=genShop(run); S.relics=n.relics; S.work=n.work; S.reroll++; save(); closePlacard();
+  if(run.money<price(S.reroll)) return note(`New stock costs £${price(S.reroll)}. Your purse is short.`);
+  busyShop=true; run.money-=price(S.reroll); const n=genShop(run); S.relics=n.relics; S.work=n.work; S.reroll++; save(); closePlacard();
   for(const x of sItems) if((x.kind==='curio'||x.kind==='work')&&x.obj) sBurst(x.obj.position.clone().add(V3(0,.4,0)),['#ecd08a','#f2e8d0','#8c2b2d'],12);
   await wait(.15); buildStock(true); refreshShopHud(); await wait(.6); busyShop=false;
+}
+
+// ---------- lots and charters ----------
+function labelTex(w,h,draw){return cvs(w,h,(g,W,H)=>{draw(g,W,H);});}
+const LOT_BUILD={
+  auction:g=>{ // a slatted crate packed with straw, a gilded corner peeking out
+    part(g,box(.72,.42,.52),cmat(C.wood),[0,.21,0]);
+    for(const y of [.06,.21,.36]) part(g,box(.75,.06,.55),cmat(C.dwood),[0,y,0],null,null,0);
+    for(let i=0;i<14;i++) part(g,cone(.025,.2),cmat(i%2?'#e0c060':'#c8a040'),[(Math.random()-.5)*.6,.46,(Math.random()-.5)*.4],null,[(Math.random()-.5)*1.2,0,(Math.random()-.5)*1.2],0);
+    part(g,sph(.09),metal(C.gold,100),[.14,.47,.04],null,null,0); part(g,OCT(),metal('#d82a3a',150),[-.12,.5,-.02],[1.4,1.8,1.4],null,0);
+    const lab=new THREE.Mesh(new THREE.PlaneGeometry(.38,.2),new THREE.MeshBasicMaterial({map:labelTex(192,100,(c,W,H)=>{c.fillStyle='#efe4c8'; c.fillRect(0,0,W,H); c.strokeStyle='#5d4b3a'; c.lineWidth=4; c.strokeRect(5,5,W-10,H-10); c.fillStyle='#221913'; c.font='700 40px Georgia, serif'; c.textAlign='center'; c.textBaseline='middle'; c.fillText('LOT '+(10+Math.floor(Math.random()*89)),W/2,H/2+2);})}));
+    lab.position.set(0,.21,.28); g.add(lab);
+    return dt=>{g.rotation.y=Math.sin(clock*.7)*.25;};},
+  sealed:g=>{ // an envelope standing in a little rack, closed with red wax
+    part(g,box(.6,.07,.26),cmat(C.dwood),[0,.035,0]);
+    const e=new THREE.Group(); e.position.set(0,.36,0); e.rotation.x=-.18; g.add(e);
+    part(e,box(.76,.5,.025),cmat(C.cream),null,null,null,0);
+    const front=new THREE.Mesh(new THREE.PlaneGeometry(.76,.5),new THREE.MeshBasicMaterial({map:labelTex(256,168,(c,W,H)=>{c.fillStyle='#f3e6c4'; c.fillRect(0,0,W,H); c.strokeStyle='#b8a47a'; c.lineWidth=3; c.beginPath(); c.moveTo(4,4); c.lineTo(W/2,H*.58); c.lineTo(W-4,4); c.stroke();
+      c.fillStyle='#5d4b3a'; c.font='italic 600 22px Georgia, serif'; c.textAlign='center'; c.fillText('Sealed move',W/2,H-22);})}));
+    front.position.z=.014; e.add(front);
+    part(e,cyl(.075,.075,.025,20),cmat('#8c1a1a'),[0,.03,.03],null,[Math.PI/2,0,0],0); part(e,cyl(.045,.045,.012,16),cmat('#6a1010'),[0,.03,.045],null,[Math.PI/2,0,0],0);
+    return dt=>{e.rotation.z=Math.sin(clock*1.3)*.04;};},
+  muster:g=>{ // a roll of names tied with a red ribbon, one end hanging open
+    part(g,box(.12,.12,.2),cmat(C.dwood),[-.25,.06,0]); part(g,box(.12,.12,.2),cmat(C.dwood),[.25,.06,0]);
+    const r=new THREE.Group(); r.position.y=.24; g.add(r);
+    part(r,cyl(.11,.11,.72,20),cmat(C.cream),null,null,[0,0,Math.PI/2]);
+    for(const x of [-.4,.4]) part(r,sph(.065),cmat(C.dwood),[x,0,0]);
+    part(r,torG(.115,.022),cmat('#b0222a'),null,null,[0,Math.PI/2,0],0);
+    const sheet=new THREE.Mesh(new THREE.PlaneGeometry(.56,.3),new THREE.MeshBasicMaterial({map:labelTex(256,140,(c,W,H)=>{c.fillStyle='#f3e6c4'; c.fillRect(0,0,W,H); c.fillStyle='#5d4b3a'; c.font='italic 18px Georgia, serif';
+      ['Pvt. ______','Cpl. ______','Sgt. ______','Sir ______'].forEach((t,i)=>c.fillText(t,18,30+i*30));}),side:THREE.DoubleSide}));
+    sheet.position.set(0,-.06,.13); sheet.rotation.x=-.25; r.add(sheet);
+    return dt=>{r.rotation.x=Math.sin(clock*.9)*.06;};},
+};
+function buildCharter(g,id){ // a gilt-framed certificate on an easel
+  const c=CHARTER_BY[id], f=new THREE.Group(); f.position.y=.5; f.rotation.x=-.16; g.add(f);
+  for(const [x,y,w,h] of [[0,.33,.9,.07],[0,-.33,.9,.07],[-.42,0,.07,.73],[.42,0,.07,.73]]) part(f,box(w,h,.05),metal(C.gold,90),[x,y,0],null,null,0);
+  const tex=labelTex(320,248,(g2,W,H)=>{g2.fillStyle='#f3e6c4'; g2.fillRect(0,0,W,H); g2.strokeStyle='#8c2b2d'; g2.lineWidth=2; g2.strokeRect(10,10,W-20,H-20);
+    g2.fillStyle='#8c2b2d'; g2.textAlign='center'; g2.font='700 20px Cinzel, Georgia, serif'; g2.fillText('CLUB CHARTER',W/2,46);
+    g2.fillStyle='#221913'; g2.font='600 26px "EB Garamond", Georgia, serif'; const words=c.name.split(' '); let line='', y=96;
+    for(const w of words){const t=line?line+' '+w:w; if(g2.measureText(t).width>W-50){g2.fillText(line,W/2,y); y+=30; line=w;} else line=t;} g2.fillText(line,W/2,y);
+    g2.fillStyle='#5d4b3a'; g2.font='italic 17px Georgia, serif'; g2.fillText('granted to the bearer',W/2,H-46);});
+  const paper=new THREE.Mesh(new THREE.PlaneGeometry(.78,.6),new THREE.MeshBasicMaterial({map:tex})); paper.position.z=.005; f.add(paper);
+  part(f,box(.78,.6,.02),cmat(C.dwood),[0,0,-.02],null,null,0);
+  part(f,cyl(.07,.07,.02,20),cmat('#8c1a1a'),[.28,-.22,.03],null,[Math.PI/2,0,0],0);
+  for(const s2 of [-1,1]) part(f,box(.03,.14,.008),cmat('#b0222a'),[.28+s2*.03,-.3,.025],null,[0,0,s2*.3],0);
+  const leg=cyl(.018,.018,.8,6); part(g,leg,cmat(C.dwood),[-.3,.38,.06],null,[.12,0,.2]); part(g,leg,cmat(C.dwood),[.3,.38,.06],null,[.12,0,-.2]); part(g,leg,cmat(C.dwood),[0,.38,-.18],null,[-.3,0,0]);
+  return dt=>{f.rotation.z=Math.sin(clock*.8)*.02;};
+}
+function buildLots(drop){
+  clearItems(it=>it.kind==='lot'||it.kind==='charter');
+  const S=run.shop;
+  S.lots.forEach((L,i)=>{const base=V3(SLOT_X[i],SHELF.lots+.02,ITEM_Z), off=V3(.5,-.12,.45);
+    if(L.sold) return soldSlot('lot',i,base,off);
+    const g=new THREE.Group(), anim=LOT_BUILD[L.kind](g); g.scale.setScalar(1.6); sScene.add(g);
+    const it=addItem('lot',i,g,base,{anim,noSpin:true,tagOff:off}); it.tag=mkTag(it); if(drop) dropIn(it,.1+i*.08);});
+  const C2=run.charterOffer, base=V3(SLOT_X[2],SHELF.lots+.02,ITEM_Z), off=V3(.5,-.12,.45);
+  if(!C2) return;
+  if(C2.sold) return soldSlot('charter',0,base,off);
+  const g=new THREE.Group(), anim=buildCharter(g,C2.id); g.scale.setScalar(1.2); sScene.add(g);
+  const it=addItem('charter',0,g,base,{anim,noSpin:true,tagOff:off}); it.tag=mkTag(it); if(drop) dropIn(it,.3);
+}
+// portraits of pieces for lot cards
+const pieceCache={};
+function pieceThumb(type,ed,ann){
+  const k=type+(ed||'')+(ann||''); if(pieceCache[k]!=null) return pieceCache[k];
+  try{const list=[], t=new Toy({id:-1,type,name:'',ed:ed||null,ann:ann||null},'w',false,{scene:thumbScene,list}); t.setExpr('happy',9);
+    for(let i=0;i<12;i++) t.update(.05); t.yawG.rotation.y=0; t.root.rotation.y=-.3; thumbScene.remove(t.root); pieceCache[k]=renderThumb(t.root,.3); t.dispose();}
+  catch(e){pieceCache[k]='';}
+  return pieceCache[k];
+}
+function lotPic(c){
+  const img=src=>src?`<img src="${src}" alt="">`:'';
+  if(c.kind==='curio') return img(curioThumb(c.id));
+  if(c.kind==='annotate') return `<span class="annmark">${c.ann}</span>`;
+  if(c.kind==='enchant') return img(pieceThumb({foil:'R',holo:'Q',poly:'B',gold:'K'}[c.ed],c.ed));
+  if(c.kind==='promote') return img(pieceThumb(c.to));
+  if(c.kind==='manual') return img(curioThumb('book'));
+  return img(pieceThumb(c.type,c.ed,c.ann));
+}
+const lotOk=c=>c.kind==='curio'?run.relics.length<relicMax():run.army.some((_,i)=>validTarget(c,i));
+async function buyLot(it){
+  const L=run.shop.lots[it.i];
+  if(run.money<price(L.cost)) return note('Not enough in your purse.');
+  if(L.kind==='auction'&&run.relics.length>=relicMax()) return note('Your cabinet is full. Sell a curio before opening an Auction Lot.');
+  if(L.kind==='muster'&&!run.army.some(d=>!d)) return note('There is no empty square on your board for a recruit.');
+  busyShop=true; run.money-=price(L.cost); L.opened=true; L.choices=genLotChoices(L.kind); save(); closePlacard(); refreshShopHud(); sfx('buy');
+  const p0=it.obj.position.clone().add(V3(0,.4,0));
+  await tween(.35,(e,q)=>{it.obj.rotation.z=Math.sin(q*Math.PI*6)*.12*(1-q); it.obj.scale.setScalar(1.6+Math.sin(q*Math.PI)*.15);},Ez.lin);
+  sBurst(p0,L.kind==='sealed'?['#8c1a1a','#f3e6c4','#ecd08a']:L.kind==='auction'?['#e0c060','#c8a040','#ecd08a']:['#f3e6c4','#b0222a','#ecd08a'],22); sfx(L.kind==='sealed'?'pop':'sparkle');
+  busyShop=false; openLot(it);
+}
+function openLot(it){sLot={it,L:run.shop.lots[it.i]}; renderLotSheet();}
+function renderLotSheet(){
+  if(!sLot) return; const {L}=sLot, D=LOTS[L.kind];
+  const why=L.kind==='auction'?'Your cabinet is full.':L.kind==='muster'?'No empty square on your board.':'None of your pieces can take this.';
+  $('lotBox').innerHTML=`<span class="k">${D.name} · choose 1</span><h3>${L.kind==='auction'?'What came in the crate':L.kind==='sealed'?'Break the seal':'Volunteers on the roll'}</h3><p>${D.blurb}</p>
+    <div class="lotcards">${L.choices.map((c,k)=>{const ok=lotOk(c); return `<div class="lotcard"><div class="pic">${lotPic(c)}</div><b>${c.name}</b><small>${c.desc}${ok?'':` <i>${why}</i>`}</small><button class="btn sm" type="button" data-lk="${k}" ${ok?'':'disabled'}>Take</button></div>`;}).join('')}</div>
+    <div class="row end"><button class="btn sm ghost" type="button" data-lskip="1">Skip this lot</button></div>`;
+  $('lotSheet').hidden=false; setHint('Choose one, or skip the lot.');
+}
+function finishLot(){if(!sLot) return; const {it,L}=sLot; L.sold=true; L.choices=null; removeItem(it); soldSlot('lot',it.i,it.base,it.tagOff); sLot=null; $('lotSheet').hidden=true; save(); refreshShopHud(); setHint();}
+$('lotSheet').addEventListener('click',e=>{
+  if(!sLot||busyShop) return; initAudio();
+  if(e.target.closest('[data-lskip]')){sfx('whoosh'); return finishLot();}
+  const b=e.target.closest('[data-lk]'); if(!b||b.disabled) return;
+  const c=sLot.L.choices[+b.dataset.lk];
+  if(c.kind==='curio'){run.relics.push({id:c.id}); const at=sLot.it.obj.position.clone().add(V3(0,.3,0)); finishLot(); buildOwned(); refreshShopHud(); sfx('coin');
+    sBurst(V3(ownX(run.relics.length-1),SHELF.own+.4,ITEM_Z),['#ecd08a','#ffffff','#c9a24a'],18,SHELF.own+.05); sBurst(at,['#e0c060','#ecd08a'],10);
+    const fan=armyToys.filter(Boolean); if(fan.length){const f=rnd(fan); f.setExpr('love',1.4); sSay(f,rnd(['Ooh, an antique!','Is it valuable?','I love a bargain!']));} return;}
+  $('lotSheet').hidden=true; sPending={it:sLot.it,w:c,lot:true}; sfx('select');
+  openPlacard(`<span class="k">${LOTS[sLot.L.kind].name}</span><h3>${c.name}</h3><p>Choose a glowing square on your board.</p><div class="row"><button class="btn sm ghostb" data-pa="back" type="button">Back to the lot</button></div>`,'top');
+  showTargets(c); setHint(`Choose a glowing square on your board for ${c.name}.`);
+});
+async function buyCharter(it){
+  const C2=run.charterOffer, c=CHARTER_BY[C2.id];
+  if(run.money<price(CHARTER_COST)) return note('Not enough in your purse.');
+  busyShop=true; run.money-=price(CHARTER_COST); C2.sold=true; run.charters.push(c.id); save(); closePlacard(); sfx('promote');
+  const at=it.obj.position.clone().add(V3(0,.6,0));
+  sBurst(at,['#ecd08a','#ffffff','#8c2b2d','#c9a24a'],30); sPop('Charter granted',at);
+  await tween(.4,e=>{it.obj.position.y+=Math.sin(e*Math.PI)*.02;},Ez.io);
+  removeItem(it); soldSlot('charter',0,it.base,it.tagOff);
+  if(c.id==='cabinet') buildOwned();
+  if(c.id==='order'&&run.shop.reroll>3) run.shop.reroll-=2;
+  const fan=armyToys.filter(Boolean); if(fan.length){const f=rnd(fan); f.setExpr('love',1.6); sSay(f,rnd(['Members now? Fancy!','Very official.','Does this come with biscuits?']));}
+  busyShop=false; refreshShopHud(); renderRelics();
 }
 
 // ---------- input ----------
@@ -2581,14 +2814,14 @@ shopCanvas.addEventListener('pointerup',e=>{if(!sDown||!shopOpen) return; const 
   if(hit.item.kind==='bell') return reroll(hit.item);
   inspect(hit.item);
 });
-$('sLeave').onclick=()=>{if(busyShop) return; initAudio(); leaveShop();};
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shopOpen&&!busyShop){if(sPending){sPending=null; clearHighlights();} if(sSwap>=0) dropSwap(); closePlacard(); setHint();}});
+$('sLeave').onclick=()=>{if(busyShop) return; initAudio(); if(sLot) return note('Choose from the open lot or skip it first.'); leaveShop();};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shopOpen&&!busyShop){if(sPending&&sPending.lot){sPending=null; clearHighlights(); closePlacard(); renderLotSheet(); return;} if(sLot) return; if(sPending){sPending=null; clearHighlights();} if(sSwap>=0) dropSwap(); closePlacard(); setHint();}});
 
 // ---------- open / close / frame ----------
 function frameShop(){
   if(!shopR) return; const w=sBody.clientWidth, h=sBody.clientHeight; if(!w||!h) return;
   shopR.setSize(w,h,false); sCam.aspect=w/h;
-  const vf=sCam.fov*Math.PI/180, hf=2*Math.atan(Math.tan(vf/2)*sCam.aspect), d=Math.max(3.25/Math.tan(hf/2),4.45/Math.tan(vf/2))+1.6, el=.24;
+  const vf=sCam.fov*Math.PI/180, hf=2*Math.atan(Math.tan(vf/2)*sCam.aspect), d=Math.max(3.25/Math.tan(hf/2),5.6/Math.tan(vf/2))+1.6, el=.24;
   sCam.position.set(0,sTarget.y+Math.sin(el)*d,sTarget.z+Math.cos(el)*d); sCam.lookAt(sTarget); sCam.updateProjectionMatrix();
 }
 function showShop(){
@@ -2597,12 +2830,15 @@ function showShop(){
   if(!shopR){shopR=new THREE.WebGLRenderer({canvas:shopCanvas,antialias:true}); shopR.setPixelRatio(Math.min(window.devicePixelRatio||1,2)); shopR.shadowMap.enabled=true; shopR.shadowMap.type=THREE.PCFSoftShadowMap; new ResizeObserver(frameShop).observe(sBody);}
   if(!sBuilt){buildShopRoom(); sBuilt=true;}
   sSel=null; sPending=null; sSwap=-1; busyShop=false; closePlacard(); clearHighlights(); frameShop();
-  buildStock(true); buildOwned(); buildArmy(); refreshShopHud(); setHint();
+  if(!run.charters) run.charters=[]; if(!run.shop.lots) run.shop.lots=[mkLot(),mkLot()];
+  if(!run.charterOffer||run.charterOffer.ante!==run.ante){const id=pickCharter(); run.charterOffer=id?{ante:run.ante,id,sold:false}:null;}
+  save(); sLot=null; $('lotSheet').hidden=true;
+  buildStock(true); buildLots(true); buildOwned(); buildArmy(); refreshShopHud(); setHint();
   setTimeout(()=>{const t=rnd(armyToys.filter(Boolean)); if(t&&shopOpen) sSay(t,rnd(['Ooh, shopping!','Can we afford anything?','I want the shiny one!','Look at all this stuff!']));},900);
 }
 function leaveShop(){
   shopOpen=false; shopEl.hidden=true; closePlacard(); sPending=null; sSwap=-1; clearHighlights();
-  clearItems(it=>it.kind!=='bell'); for(const t of sToys.slice()) t.dispose(); armyToys=new Array(16).fill(null);
+  sLot=null; $('lotSheet').hidden=true; clearItems(it=>it.kind!=='bell'); for(const t of sToys.slice()) t.dispose(); armyToys=new Array(16).fill(null);
   for(const b of sBubs) b.el.remove(); sBubs=[];
   run.shop=null; save(); renderRelics(); showBlinds();
 }
@@ -2613,13 +2849,13 @@ shopHook=dt=>{
     const goal=(it===sHover||it===sSel)?.14:0; it.lift+=(goal-it.lift)*Math.min(1,dt*10);
     it.obj.position.set(it.base.x,it.base.y+it.lift+it.dropY,it.base.z);
     if(it.kind==='bell'){it.obj.rotation.z=Math.sin(clock*40)*it.wob; it.wob*=Math.pow(.02,dt);}
-    else if(!it.toy) it.obj.rotation.y+=dt*(it===sSel?1.5:.3);
+    else if(!it.toy&&!it.noSpin) it.obj.rotation.y+=dt*(it===sSel?1.5:.3);
     if(it.anim) it.anim(dt,sLook);
     if(it.toy) it.obj.traverse(o=>{if(o.userData.spin) o.rotation.z+=dt*1.5;});
   }
   const pulse=.5+.5*Math.sin(clock*5);
   for(const tl of tiles){const m=tl.material; if(tl.userData.hl) m.emissive.setRGB(.42*pulse+.12,.3*pulse+.08,.04); else if(tl.userData.tile===sSwap) m.emissive.setRGB(.04,.22,.12); else m.emissive.setRGB(0,0,0);}
-  if(sMotes){const a=sMotes.geometry.attributes.position; for(let i=0;i<a.count;i++){let y=a.getY(i)+dt*.06*(1+i%3); if(y>7.7) y=0; a.setY(i,y); a.setX(i,a.getX(i)+Math.sin(clock*.3+i)*dt*.03);} a.needsUpdate=true;}
+  if(sMotes){const a=sMotes.geometry.attributes.position; for(let i=0;i<a.count;i++){let y=a.getY(i)+dt*.06*(1+i%3); if(y>9.9) y=0; a.setY(i,y); a.setX(i,a.getX(i)+Math.sin(clock*.3+i)*dt*.03);} a.needsUpdate=true;}
   for(const it of sItems){ if(!it.tag) continue; const p=sScreen(it.base.clone().add(it.tagOff||V3(0,0,0))); it.tag.style.transform=`translate(${p.x}px,${p.y}px)`; it.tag.style.visibility=p.z<1?'visible':'hidden';}
   for(let i=sBubs.length-1;i>=0;i--){const b=sBubs[i]; if(clock>b.until||!b.t.alive){b.el.remove(); sBubs.splice(i,1); continue;}
     const p=sScreen(b.t.root.position.clone().add(V3(0,b.t.h*b.t.root.scale.y+.12,0))); b.el.style.transform=`translate(${p.x}px,${p.y}px) translate(-50%,-100%)`;}
@@ -2655,7 +2891,7 @@ function showTitle(){
       <dt>Opening &amp; Middlegame</dt><dd>Reach the points target before your moves run out. Checkmate also wins on the spot.</dd>
       <dt>Endgame</dt><dd>Each event ends against a titled opponent. Points don't decide it: checkmate their King within the move limit.</dd>
       <dt>Defeat</dt><dd>Get checkmated, run out of moves, or stalemate, and the run is over.</dd>
-      <dt>Between games</dt><dd>Spend your purse in the Curio Shoppe on curios, recruits, promotions and inlays that restyle your pieces. Win eight events to become World Champion.</dd>
+      <dt>Between games</dt><dd>Spend your purse in the Curio Shoppe on curios, recruits, promotions and inlays. Open lots to choose from curios, annotations or recruits, and sign one club charter per event for a lasting edge. Win eight events to become World Champion.</dd>
     </dl>
     <div class="row" style="justify-content:center">${saved?'<button class="btn" id="bCont" type="button">Continue run</button>':''}<button class="btn ${saved?'ghost':''}" id="bNew" type="button">New run</button></div>
     <p class="muted" style="text-align:center;margin:0 auto">Tap a piece, then a marked square. Worried eyes mean that piece is under attack.<br>Drag to turn the board, scroll or pinch to zoom, right-drag or use two fingers to pan.</p>`,true);
@@ -2681,6 +2917,7 @@ function showBlinds(){
     <div class="fixtures">${rows}</div>
     <div><h3>Black</h3><div class="glyphs">${theirs}</div></div>
     <div><h3>White · you</h3><div class="glyphs">${mine}</div></div>
+    ${(run.charters||[]).length?`<div><h3>Club charters</h3><div class="chips">${run.charters.map(id=>`<span title="${CHARTER_BY[id].desc}">${CHARTER_BY[id].name}</span>`).join('')}</div></div>`:''}
     <div class="row spread"><button class="btn ghost sm" id="bQuit" type="button">Main menu</button><button class="btn${bi===2?' blood':''}" id="bFight" type="button">${bi===2?'Play the Endgame':'Play the '+BLIND[bi].name}</button></div>`,true);
   on('bFight',startRound); on('bQuit',showTitle);
   previewArmy(toysAll.length===0);
@@ -2694,7 +2931,7 @@ function showCashOut(kind){
   if(kind==='mate'&&hasRelic('regicide')) lines.push(['Regicide',5]);
   if(RS.mateOnly){const sp=Math.min(5,Math.floor(RS.score/Math.max(1,anteBase(run.ante)*.5))); if(sp) lines.push([`Style prize for ${fmt(RS.score)} points`,sp]);}
   if(hasRelic('piggy')) lines.push(['Prize Fund',3]);
-  const interest=Math.min(5,Math.floor(run.money/5)); if(interest) lines.push(['Interest, £1 per £5 held',interest]);
+  const interest=Math.min(interestCap(),Math.floor(run.money/5)); if(interest) lines.push(['Interest, £1 per £5 held',interest]);
   const total=lines.reduce((s,l)=>s+l[1],0);
   showScreen(`<span class="eyebrow">${eventName(run.ante)}</span><h2>${kind==='mate'?'Checkmate':'Game won'}</h2>
     <p>${RS.mateOnly?`You mated ${boss.name} with ${RS.moves} move${RS.moves===1?'':'s'} to spare.`:`Final score ${fmt(RS.score)} against a target of ${fmt(RS.target)}.`}</p>
