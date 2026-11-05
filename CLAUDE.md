@@ -1,6 +1,6 @@
 # Googly Gambit: notes for Claude Code
 
-A 3D chess roguelike in a single self-contained file, `index.html` (about 3,200 lines). It was ported from a Claude artifact page and is still published as one:
+A 3D chess roguelike in a single self-contained file, `index.html` (about 3,350 lines). It was ported from a Claude artifact page and is still published as one:
 https://claude.ai/artifact/G7xwHMRpJoYSBYCWN7vMyB
 
 ## Layout of index.html
@@ -11,20 +11,20 @@ Find sections by searching for the `// =====` banner comments:
 | --- | --- |
 | `<style>` (top) | All CSS. Colour tokens on `:root`. Phone layout first, wide layout under `@media (min-width:900px) and (min-aspect-ratio:1/1)`, where `#rail` (event card + scoresheet) is the left column; at 1280px+ your card and the curio tray share a row. On phones `#rail` is `display:contents`. |
 | `CHESS ENGINE` | Board as `Int8Array(64)`, index `rank*8+file`. White (+) is the player, Black (-) the AI. Move gen, `isAttacked`, negamax `bestMove`. `SHIELD`, `TRANS` and `RULES` carry ability and boss rules into the engine. |
-| `GAME DATA` | Scoring tables (`CHIPS`=Material, `MULT`=Brilliance), `PERSONA` lines, `RARE` pieces, `RELICS` (curios), `BOSSES`, events and targets, army builders, shop stock generation. `CHARTERS` (one per event, permanent; helpers `hasCharter`, `price`, `relicMax`, `interestCap`, `baseMult`), `ANNOT` (annotation symbols pieces can wear: `def.ann`), `LOTS` and `genLotChoices` (open one, choose 1 of 3). |
-| `SCENE` | three.js renderer, board, piece factory (`buildModel`; the shop-only pieces J/F/A/X/H each have their own turned silhouette), `BOSS_LOOK` costumes (only those with `stache:true` keep the King's moustache), inlays (`ED_MAT`), the `Toy` class (eyes, expressions). |
+| `GAME DATA` | Scoring tables (`CHIPS`=Material, `MULT`=Brilliance), `PERSONA` lines, `RARE` pieces, `RELICS` (curios), `BOSSES`, events and targets, army builders, shop stock generation. `CHARTERS` (one per event, permanent; helpers `hasCharter`, `price`, `relicMax`, `interestCap`, `baseMult`), `ANNOT` (annotation symbols pieces can wear: `def.ann`), `LOTS` and `genLotChoices` (open one, choose 1 of 3). `BOARDS` (the 10 run boards: `effect`, `unlock` text, `skin` colours/textures; `run.board`, `boardId()`, `onBoard(id)`, `unlockBoard(id)`, `boardEventCleared(ante)`; unlock hooks sit in `winRound`, `promote`, the prize-giving collect, `refreshShopHud` via `checkArmyUnlocks`, and `showVictory`). |
+| `SCENE` | three.js renderer, board, piece factory (`buildModel`; the shop-only pieces J/F/A/X/H each have their own turned silhouette), `BOSS_LOOK` costumes (only those with `stache:true` keep the King's moustache), inlays (`ED_MAT`), the `Toy` class (eyes, expressions). Board skins: `BOARD_SKIN` holds the board's materials, `applyBoardSkin(id)` restyles squares/frame/labels (`skinTex` makes the leaf, ledger, parchment and marble textures), `boardRipple()` animates a switch. |
 | `ANIMATION, FX, SOUND` | `tween`, Web Audio `SFX`, particles, speech bubbles, move and capture choreography. Camera: `frameCamera` fits the board, `VIEW` holds the player's turn/tilt/zoom/pan (`applyView`, `resetView`). Render `loop`, then the table dressing (chess clock showing moves left, candle, books and tea) right after it. |
 | `ROUND LOGIC` | Save/load, HUD, `startRound`, input (pointer handlers: drag turns, right-drag/two fingers pan, wheel/pinch zoom, a short tap calls `onTap`), `playerMove`, `enemyTurn`, `scoreEvent`, win/lose. |
 | `RARE PIECE ABILITIES` | Feats, Jester swap, Executioner sentence, Alchemist transmute, Herald rally. |
 | `BOSS RULES` | Fog, Phantom, Necromancer, Puppeteer, Glacier, Jailer/Gorgon locks, Saboteur mines, Blacksmith, Plague Doctor, Gardener vines. |
 | `THE CURIO SHOPPE` | Second three.js scene. Shelves top to bottom: Lots & Charters (`SHELF.lots`), Your Cabinet, Curiosities, The Workshop, then your army on the counter. One 3D model per curio (`CURIO`), lot props (`LOT_BUILD`), the framed charter (`buildCharter`). Buying, selling, swapping army squares; an opened lot shows `#lotSheet`, and cards that target a piece reuse the workshop's `sPending` + `applyWork` flow with `lot:true`. |
-| `SCREENS` | Title (`showTitle`/`enterTitle`/`exitTitle`: `body.titlemode` makes the board full-screen over the backdrop shader's checkerboard vortex (`bgU.uTitle`), hides `TITLE_HIDE` props, and the camera circles; `#title` holds the googly-eyed logo and menu), the Almanac, Options, How to play, event list (blinds), prize-giving, game over, victory. |
+| `SCREENS` | Title (`showTitle`/`enterTitle`/`exitTitle`: `body.titlemode` makes the board full-screen over the backdrop shader's checkerboard vortex (`bgU.uTitle`), hides `TITLE_HIDE` props, and the camera circles; `#title` holds the googly-eyed logo and menu; Play opens the board picker in `#tPick`, `renderPicker`), the unlock notice (`showUnlock`), the Almanac, Options, How to play, event list (blinds), prize-giving, game over, victory. |
 
 ## Rules that keep it working as a Claude page
 
 - Keep it one file. CSS and JS stay inline.
 - External scripts only from cdnjs.cloudflare.com (or jsDelivr/unpkg), pinned to an exact version. Stylesheets only from Google Fonts. Anything else is blocked on Claude pages.
-- Wrap every `localStorage` call in try/catch, as `save()`/`loadSave()` and `loadJSON()`/`saveJSON()` do. Keys: `googly-gambit-run-v2` (the saved run; bump it if the save format changes), `googly-gambit-records-v1` (best results across runs), `googly-gambit-prefs-v1` (sound, speed, camera).
+- Wrap every `localStorage` call in try/catch, as `save()`/`loadSave()` and `loadJSON()`/`saveJSON()` do. Keys: `googly-gambit-run-v2` (the saved run; bump it if the save format changes), `googly-gambit-records-v1` (best results across runs), `googly-gambit-prefs-v1` (sound, speed, camera, last board), `googly-gambit-boards-v1` (unlocked boards, best event and championships per board).
 - No `alert`/`confirm`/`prompt`; they do nothing on Claude pages.
 
 ## Publishing the Claude page

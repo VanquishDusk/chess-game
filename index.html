@@ -308,6 +308,37 @@ body.titlemode #stage .tools,body.titlemode #nameplate{visibility:hidden}
   .tBtn.play{flex-basis:100%;font-size:20px;padding:14px 20px 11px}
   .tBtn small{font-size:13px}
 }
+/* board picker: arrows, a card with a checker swatch, and a row of swatch pips */
+.tPick{display:flex;flex-direction:column;align-items:center;gap:12px;width:min(660px,100%);pointer-events:auto;animation:menuIn .5s cubic-bezier(.2,1.3,.4,1) both}
+.pRow{display:flex;align-items:center;gap:10px;width:100%}
+.pArrow{flex:0 0 auto;width:48px;height:66px;border:0;border-radius:7px;background:#2a1d18;color:var(--brass-hi);font:700 34px/1 var(--f-display);cursor:pointer;box-shadow:0 5px 0 #0e0907,0 10px 18px #000a,inset 0 0 0 2px #ffffff22,inset 0 0 0 4px #2a1d18,inset 0 0 0 5px #ecd08a77;transition:transform .08s,box-shadow .08s}
+.pArrow:active{transform:translateY(4px);box-shadow:0 1px 0 #0e0907,inset 0 0 0 5px #ecd08aaa}
+.pArrow:focus-visible,.pPip:focus-visible{outline:3px solid var(--brass-hi);outline-offset:3px}
+.pCard{flex:1;min-width:0;display:flex;gap:16px;align-items:center;background:var(--paper);color:var(--ink);border-radius:4px;padding:12px 16px;min-height:118px;box-shadow:0 0 0 1px var(--ink2),0 0 0 4px var(--paper),0 0 0 5px var(--brass-d),0 14px 30px #000b}
+.pSw{position:relative;flex:0 0 auto;display:block;width:70px;height:70px;border-radius:2px;background:conic-gradient(var(--l) 25%,var(--d) 0 50%,var(--l) 0 75%,var(--d) 0) 0 0/25% 25%;box-shadow:0 0 0 4px var(--f),0 0 0 5px #0006,0 4px 10px #0007}
+.pTxt{min-width:0;display:flex;flex-direction:column;gap:3px}
+.pK{font-family:var(--f-display);font-size:9.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--blood)}
+.pTxt b{font-family:var(--f-display);font-size:20px;letter-spacing:.05em;line-height:1.15}
+.pTxt p{margin:0;font-size:16px;line-height:1.35}
+.pTxt small{font-size:14.5px;font-style:italic;color:var(--ink2);line-height:1.3}
+.pCard.locked .pSw{filter:grayscale(.8) brightness(.55)}
+.pCard.locked .pSw::after{content:"?";position:absolute;inset:0;display:grid;place-items:center;font:700 34px var(--f-display);color:var(--brass-hi);text-shadow:0 2px 0 #000}
+.pPips{display:flex;gap:9px;flex-wrap:wrap;justify-content:center}
+.pPip{width:26px;height:26px;border:0;padding:0;border-radius:2px;cursor:pointer;background:conic-gradient(var(--l) 25%,var(--d) 0 50%,var(--l) 0 75%,var(--d) 0) 0 0/50% 50%;box-shadow:0 0 0 2px var(--f),0 2px 5px #0009;transition:transform .12s}
+.pPip.on{transform:translateY(-4px) scale(1.12);box-shadow:0 0 0 2px var(--f),0 0 0 4px var(--brass-hi),0 4px 8px #000a}
+.pPip.locked{filter:grayscale(1) brightness(.4)}
+.pActs{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;align-items:flex-end}
+.tBtn[disabled]{cursor:not-allowed;filter:grayscale(.7) brightness(.75)}
+.tBtn[disabled]:hover,.tBtn[disabled]:active{transform:none}
+@media (max-width:640px){.pArrow{width:38px;height:56px;font-size:28px}.pCard{gap:12px;padding:10px 12px}.pSw{width:52px;height:52px}.pTxt b{font-size:17px}.pTxt p{font-size:15px}.pActs .tBtn{flex:1 1 40%}}
+/* a board unlocked mid-run: a brass-edged card drops in at the top */
+.unlockNote{position:fixed;top:max(14px,env(safe-area-inset-top,0px));left:50%;z-index:70;display:flex;gap:14px;align-items:center;width:min(430px,calc(100% - 32px));transform:translateX(-50%);background:var(--paper);color:var(--ink);border-radius:4px;padding:12px 16px 12px 14px;box-shadow:0 0 0 1px var(--ink2),0 0 0 4px var(--paper),0 0 0 5px var(--brass-d),0 16px 36px #000c;pointer-events:none;animation:noteIn .5s cubic-bezier(.2,1.4,.4,1);transition:opacity .35s,transform .35s}
+.unlockNote.out{opacity:0;transform:translate(-50%,-24px)}
+@keyframes noteIn{from{transform:translate(-50%,-40px);opacity:0}}
+.unlockNote .pSw{width:48px;height:48px}
+.unlockNote small{display:block;font-family:var(--f-display);font-size:9.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--blood)}
+.unlockNote b{display:block;font-family:var(--f-display);font-size:17px;letter-spacing:.05em}
+.unlockNote em{display:block;font-style:normal;font-size:14.5px;line-height:1.3;color:var(--ink2)}
 /* almanac, options */
 .panel.wide{width:min(940px,100%)}
 .tabs{display:flex;gap:6px;flex-wrap:wrap}
@@ -367,8 +398,9 @@ body.titlemode #stage .tools,body.titlemode #nameplate{visibility:hidden}
 </div>
 <div id="title" class="title" hidden>
   <h1 class="tLogo" aria-label="Googly Gambit"><span class="tW1" aria-hidden="true"><span class="tL" style="--i:0">G</span><span class="tEye" style="--i:1"><i></i></span><span class="tEye" style="--i:2"><i></i></span><span class="tL" style="--i:3">G</span><span class="tL" style="--i:4">L</span><span class="tL" style="--i:5">Y</span></span><span class="tW2" aria-hidden="true"><span class="tL" style="--i:6">G</span><span class="tL" style="--i:7">A</span><span class="tL" style="--i:8">M</span><span class="tL" style="--i:9">B</span><span class="tL" style="--i:10">I</span><span class="tL" style="--i:11">T</span></span><span class="tRibbon">A chess roguelike</span></h1>
-  <div class="tBottom"><div class="tMenu" id="tMenu"></div><p class="tFoot" id="tFoot"></p></div>
+  <div class="tBottom"><div class="tPick" id="tPick" hidden></div><div class="tMenu" id="tMenu"></div><p class="tFoot" id="tFoot"></p></div>
 </div>
+<div id="unlockNote" class="unlockNote" role="status" hidden></div>
 <div id="tip" class="tip" hidden></div>
 <div id="screen" hidden><div id="panel" class="panel"></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -695,10 +727,11 @@ const BASE_MOVES=14, BOSS_MOVES=28;
 // army: 16 slots. 0-7 = back rank files a-h, 8-15 = front rank files a-h
 let UID=1;
 function mkDef(type,side,name){const pool=side==='w'?PERSONA[type].names:PERSONA[type].enemy; return {id:UID++,type,name:name||rnd(pool),ed:null};}
-function startArmy(){
-  const a=new Array(16).fill(null);
-  'RNB.KBNR'.split('').forEach((t,i)=>{if(t!=='.') a[i]=mkDef(t,'w');});
-  for(let f=1;f<=6;f++) a[8+f]=mkDef('P','w');
+function startArmy(board){
+  const a=new Array(16).fill(null), royal=board==='royal';
+  (royal?'RNBQKBNR':'RNB.KBNR').split('').forEach((t,i)=>{if(t!=='.') a[i]=mkDef(t,'w');});
+  for(let f=royal?0:1;f<=(royal?7:6);f++) a[8+f]=mkDef('P','w');
+  if(board==='scholar'){a[11].ann='!'; a[12].ann='!?';}
   uniqNames(a); return a;
 }
 function uniqNames(a){
@@ -713,7 +746,7 @@ function enemyArmy(ante,bi,bossId){
   if(bossId==='mirror'){ list=['R','N','B','Q','B','N','R']; pawns=8; }
   else {
     const end=bi===2; // endgames use reduced material, like a real endgame
-    const n=end?Math.min(5,1+Math.floor(ante*.6)):Math.min(7,1+Math.floor(ante*.8)+bi);
+    const n=(end?Math.min(5,1+Math.floor(ante*.6)):Math.min(7,1+Math.floor(ante*.8)+bi))+(onBoard('royal')?1:0);
     pawns=end?Math.min(6,2+ante):Math.min(8,3+ante+bi);
     const pool=ante<=1?['N','B']:ante<=2?['N','B','R']:['N','B','R','N','B','R','Q'];
     let q=0;
@@ -768,10 +801,33 @@ const CHARTERS=[
 const CHARTER_BY=Object.fromEntries(CHARTERS.map(c=>[c.id,c])), CHARTER_COST=10;
 const hasCharter=id=>!!run&&(run.charters||[]).includes(id);
 const price=c=>Math.max(1,Math.floor(c*(hasCharter('disc2')?.5:hasCharter('disc1')?.75:1)));
-const relicMax=()=>5+(hasCharter('cabinet')?1:0);
+const relicMax=()=>5+(hasCharter('cabinet')?1:0)+(onBoard('ebony')?1:0);
 const interestCap=()=>hasCharter('bank2')?20:hasCharter('bank1')?10:5;
 const baseMult=t=>MULT[t]+(hasCharter('coach1')?2:0)+(hasCharter('coach2')?3:0);
 function pickCharter(){const own=run.charters||[], pool=CHARTERS.filter(c=>!own.includes(c.id)&&(!c.req||own.includes(c.req))); return pool.length?rnd(pool).id:null;}
+// Boards: chosen before a run, each with its own look and rules. Only the Club Board is open at first.
+const BOARDS=[
+ {id:'club',name:'Club Board',effect:'The board every club owns. The standard game.',unlock:null,skin:{light:'#ecd8b4',dark:'#9a6a4b',frame:'#4a2e22',plinth:'#2a1913',label:'#f0d6a6'}},
+ {id:'tournament',name:'Tournament Board',effect:'+3 moves in every game.',unlock:'Win any game.',skin:{light:'#efe9d2',dark:'#3d7a52',frame:'#e4ddc6',plinth:'#2a3a30',label:'#2d5a3c'}},
+ {id:'freestyle',name:'Freestyle Board',effect:'Both back ranks are shuffled at the start of every game. Every capture gets +3 Brilliance.',unlock:'Beat an event with the Club Board.',skin:{light:'#e8dcc4',dark:'#4c6a8c',frame:'#26313e',plinth:'#151b22',label:'#c8d6e6'}},
+ {id:'gilded',name:'Gilded Board',effect:'Start the run with £15 in your purse.',unlock:'Beat Event II with the Tournament Board.',skin:{light:'#b8904a',lightTex:'leaf',dark:'#221418',frame:'#8a6420',plinth:'#2a1a0c',label:'#ffe9a0'}},
+ {id:'ledger',name:'Ledger Board',effect:'No interest at prize-giving, but every unused move pays £2.',unlock:'Collect £12 or more at a single prize-giving.',skin:{light:'#f5eedb',lightTex:'ledger',dark:'#24493a',frame:'#5a1a1c',plinth:'#2a0c0d',label:'#f2e8d0'}},
+ {id:'ebony',name:'Ebony Board',effect:'Your cabinet holds one more curio, but every game has 2 fewer moves.',unlock:'Own 5 curios at once.',skin:{light:'#f0e6d0',dark:'#1c1517',frame:'#0f0a0b',plinth:'#070505',label:'#d9c9a8'}},
+ {id:'blitz',name:'Blitz Board',effect:'Every game has 4 fewer moves, but every capture gets ×1.5 Brilliance.',unlock:'Win a game with 6 or more moves to spare.',skin:{light:'#f2e2cf',dark:'#a8262c',frame:'#140c0e',plinth:'#080505',label:'#ff9a86'}},
+ {id:'royal',name:'Royal Board',effect:'Start with a full classical army, Queen included. Black fields one extra piece in every game.',unlock:'Promote a Pawn to a Queen during a game.',skin:{light:'#e6d6ee',dark:'#4c2468',frame:'#b8913f',plinth:'#2a1036',label:'#3a1a4a'}},
+ {id:'scholar',name:"Scholar's Board",effect:'Your d- and e-pawns start annotated with ! and !?. Every lot offers one more choice.',unlock:'Have 3 annotated pieces in your army at once.',skin:{light:'#efe0bc',lightTex:'parchment',dark:'#7a5638',frame:'#3a2414',plinth:'#1e130a',label:'#efe0bc'}},
+ {id:'grandmaster',name:'Grandmaster Board',effect:'Black calculates deeper and makes fewer mistakes. Every prize-giving pays double.',unlock:'Become World Champion.',skin:{light:'#f2f0ec',lightTex:'marble',dark:'#2a2a30',darkTex:'marble',frame:'#3a3a42',plinth:'#16161a',label:'#ecd08a'}},
+];
+const BOARD_BY=Object.fromEntries(BOARDS.map(b=>[b.id,b])), BOARDS_KEY='googly-gambit-boards-v1';
+const boardId=()=>(run&&run.board&&BOARD_BY[run.board])?run.board:'club', onBoard=id=>!!run&&boardId()===id;
+function boardStore(){const st=Object.assign({unlocked:['club'],best:{},champ:{}},loadJSON(BOARDS_KEY)||{}); if(!st.unlocked.includes('club')) st.unlocked.unshift('club'); return st;}
+const isUnlocked=id=>boardStore().unlocked.includes(id);
+function unlockBoard(id){const st=boardStore(); if(st.unlocked.includes(id)) return; st.unlocked.push(id); saveJSON(BOARDS_KEY,st); showUnlock(BOARD_BY[id]);}
+function boardEventCleared(ante){
+  const st=boardStore(), b=boardId(); st.best[b]=Math.max(st.best[b]||0,ante); saveJSON(BOARDS_KEY,st);
+  if(b==='club') unlockBoard('freestyle'); if(b==='tournament'&&ante>=2) unlockBoard('gilded');
+}
+function checkArmyUnlocks(){if(!run) return; if(run.relics.length>=5) unlockBoard('ebony'); if(run.army.filter(d=>d&&d.ann).length>=3) unlockBoard('scholar');}
 // Annotations: chess annotation symbols your pieces can wear as a brass medal
 const ANNOT={
  '!':{name:'Good Move',desc:'+8 Brilliance when this piece captures.'},
@@ -786,7 +842,7 @@ const LOTS={
  sealed:{name:'Sealed Move',cost:4,blurb:'An envelope sealed with wax. Choose an annotation, inlay or promotion for one of your pieces.'},
  muster:{name:'Muster Roll',cost:4,blurb:'A roll of volunteers. Choose one recruit for an empty square on your board.'},
 };
-const lotSize=()=>3+(hasCharter('preview')?1:0);
+const lotSize=()=>3+(hasCharter('preview')?1:0)+(onBoard('scholar')?1:0);
 function mkLot(){const r=Math.random(), kind=r<.35?'auction':r<.75?'sealed':'muster'; return {kind,cost:LOTS[kind].cost,sold:false,opened:false,choices:null};}
 function genLotChoices(kind){
   const n=lotSize(), out=[], seen=new Set();
@@ -871,12 +927,15 @@ const toon=(color,extra)=>new THREE.MeshToonMaterial(Object.assign({color,gradie
 
 // ---------- board ----------
 const boardG=new THREE.Group(); scene.add(boardG);
+const BOARD_SKIN={tiles:[]}; // the board's own materials, so a run's Board can restyle them
 const sqPos=s=>new THREE.Vector3((s&7)-3.5,0,3.5-(s>>3));
 {
   const tg=new THREE.BoxGeometry(.985,.2,.985), lm=toon('#ecd8b4'), dm=toon('#9a6a4b');
-  for(let s=0;s<64;s++){const r=s>>3,c=s&7,m=new THREE.Mesh(tg,(r+c)%2===0?dm:lm); m.position.copy(sqPos(s)); m.position.y=-.1; m.receiveShadow=true; boardG.add(m);}
+  for(let s=0;s<64;s++){const r=s>>3,c=s&7,m=new THREE.Mesh(tg,(r+c)%2===0?dm:lm); m.position.copy(sqPos(s)); m.position.y=-.1; m.receiveShadow=true; boardG.add(m); BOARD_SKIN.tiles.push(m);}
+  Object.assign(BOARD_SKIN,{lm,dm});
   const fr=new THREE.Mesh(new THREE.BoxGeometry(9.2,.5,9.2),toon('#4a2e22')); fr.position.y=-.27; fr.receiveShadow=true; boardG.add(fr);
   const pl=new THREE.Mesh(new THREE.BoxGeometry(9.8,.4,9.8),toon('#2a1913')); pl.position.y=-.6; boardG.add(pl);
+  Object.assign(BOARD_SKIN,{fr:fr.material,pl:pl.material});
   { // walnut table under the board
     const wc=document.createElement('canvas'); wc.width=wc.height=512; const w2=wc.getContext('2d');
     w2.fillStyle='#3b2416'; w2.fillRect(0,0,512,512);
@@ -893,6 +952,39 @@ const sqPos=s=>new THREE.Vector3((s&7)-3.5,0,3.5-(s>>3));
   for(let i=0;i<8;i++){g.fillText('abcdefgh'[i],(0.6+i+.5)*u,512-u*.3); g.fillText(String(i+1),u*.3,512-(0.6+i+.5)*u);}
   const lab=new THREE.Mesh(new THREE.PlaneGeometry(9.2,9.2),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv)}));
   lab.rotation.x=-Math.PI/2; lab.position.y=-.015; boardG.add(lab);
+  Object.assign(BOARD_SKIN,{cv,labTex:lab.material.map});
+}
+function drawBoardLabels(bg,fg){
+  const g=BOARD_SKIN.cv.getContext('2d'), u=512/9.2; g.fillStyle=bg; g.fillRect(0,0,512,512);
+  g.fillStyle=fg; g.font='600 22px Georgia, "Times New Roman", serif'; g.textAlign='center'; g.textBaseline='middle';
+  for(let i=0;i<8;i++){g.fillText('abcdefgh'[i],(0.6+i+.5)*u,512-u*.3); g.fillText(String(i+1),u*.3,512-(0.6+i+.5)*u);}
+  BOARD_SKIN.labTex.needsUpdate=true;
+}
+const SKIN_TEX={};
+function skinTex(k){
+  if(SKIN_TEX[k]) return SKIN_TEX[k];
+  const mk=fn=>{const c=document.createElement('canvas'); c.width=c.height=256; fn(c.getContext('2d'),256); return new THREE.CanvasTexture(c);};
+  let t;
+  if(k==='leaf') t=TEX.leaf;
+  else if(k==='ledger') t=mk((g,W)=>{g.fillStyle='#ffffff'; g.fillRect(0,0,W,W); g.strokeStyle='rgba(60,110,170,.45)'; g.lineWidth=2; for(let y=22;y<W;y+=26){g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke();}
+    g.strokeStyle='rgba(180,40,40,.5)'; g.beginPath(); g.moveTo(38,0); g.lineTo(38,W); g.stroke(); g.fillStyle='rgba(40,40,60,.35)'; g.font='italic 15px Georgia, serif'; g.fillText('£ 4 . 10',150,96); g.fillText('£ 2 . 6',150,174);});
+  else if(k==='parchment') t=mk((g,W)=>{g.fillStyle='#ffffff'; g.fillRect(0,0,W,W); for(let i=0;i<40;i++){g.fillStyle=`rgba(120,80,30,${.03+Math.random()*.05})`; g.beginPath(); g.arc(Math.random()*W,Math.random()*W,10+Math.random()*40,0,Math.PI*2); g.fill();}
+    g.fillStyle='rgba(60,40,20,.28)'; g.font='italic 22px Georgia, serif'; g.fillText(rnd(['e4!','Nf3','d4!?','Bc4','O-O']),70,140);});
+  else t=mk((g,W)=>{g.fillStyle='#ffffff'; g.fillRect(0,0,W,W); // marble
+    for(let i=0;i<9;i++){let x=Math.random()*W, y=0; g.strokeStyle=`rgba(110,110,125,${.18+Math.random()*.25})`; g.lineWidth=.6+Math.random()*2.2; g.beginPath(); g.moveTo(x,y);
+      while(y<W){x+=(Math.random()-.5)*26; y+=8+Math.random()*14; g.lineTo(x,y);} g.stroke();}});
+  t.wrapS=t.wrapT=THREE.RepeatWrapping; return SKIN_TEX[k]=t;
+}
+let skinShown=null;
+function applyBoardSkin(id){
+  const b=BOARD_BY[id]||BOARDS[0], k=b.skin; if(skinShown===b.id) return; skinShown=b.id;
+  const set=(m,c,tex)=>{m.color.set(c); const map=tex?skinTex(tex):null; if(m.map!==map){m.map=map; m.needsUpdate=true;}};
+  set(BOARD_SKIN.lm,k.light,k.lightTex); set(BOARD_SKIN.dm,k.dark,k.darkTex); BOARD_SKIN.fr.color.set(k.frame); BOARD_SKIN.pl.color.set(k.plinth);
+  drawBoardLabels(k.frame,k.label);
+}
+function boardRipple(){ // a wave runs across the squares from the near corner
+  if(REDUCED) return; const T=BOARD_SKIN.tiles;
+  tween(.75,e=>{T.forEach((m,i)=>{const d=((i>>3)+(i&7))/14, ph=e*1.8-d; m.position.y=-.1+(ph>0&&ph<1?Math.sin(ph*Math.PI)*.13:0);});},Ez.lin).then(()=>T.forEach(m=>m.position.y=-.1));
 }
 const marks=[];
 {
@@ -1678,10 +1770,10 @@ function loadSave(){try{const s=localStorage.getItem(SAVE_KEY); return s?JSON.pa
 function clearSave(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
 function pickBosses(){const used=new Set(), out=[]; for(let a=1;a<=8;a++){const fin=a===8&&FINAL_BOSSES.length, pool=fin?FINAL_BOSSES:BOSSES.filter(b=>!used.has(b.id)&&(b.min||1)<=a), b=rnd(pool.length?pool:BOSSES); used.add(b.id); out.push(b.id);} return out;}
 function bossFor(a){if(!run.bosses[a-1]||!BOSS_BY[run.bosses[a-1]]) run.bosses[a-1]=rnd(BOSSES).id; return run.bosses[a-1];}
-function newRun(){run={ante:1,blind:0,money:4,army:startArmy(),relics:[],bosses:pickBosses(),stats:{best:0,bestLabel:'',caps:0,rounds:0,mates:0},endless:false,shop:null,phase:'blind',pending:null,charters:[],charterOffer:null};}
+function newRun(board){board=BOARD_BY[board]?board:'club'; run={board,ante:1,blind:0,money:board==='gilded'?15:4,army:startArmy(board),relics:[],bosses:pickBosses(),stats:{best:0,bestLabel:'',caps:0,rounds:0,mates:0},endless:false,shop:null,phase:'blind',pending:null,charters:[],charterOffer:null};}
 const slotSq=(i,side)=>side==='w'?(i<8?rc(0,i):rc(1,i-8)):(i<8?rc(7,i):rc(6,i-8));
 function movesFor(bi,boss){
-  const ch=(hasCharter('clock1')?2:0)+(hasCharter('clock2')?3:0);
+  const ch=(hasCharter('clock1')?2:0)+(hasCharter('clock2')?3:0)+(onBoard('tournament')?3:0)-(onBoard('ebony')?2:0)-(onBoard('blitz')?4:0);
   if(bi===2) return BOSS_MOVES+ch+(hasRelic('siege')?6:0)+(hasRelic('hourglass')?3:0)+((BOSS_BY[boss]&&BOSS_BY[boss].moves)||0);
   return BASE_MOVES+ch+(hasRelic('hourglass')?3:0);
 }
@@ -1773,9 +1865,11 @@ async function startRound(){
   const bi=run.blind, bossId=bi===2?bossFor(run.ante):null;
   RS={b:null,score:0,target:blindTarget(run.ante,bi),moves:movesFor(bi,bossId),streak:0,taken:0,lost:0,moveNo:0,boss:bossId,mateOnly:bi===2,turn:'w',sel:-1,legal:[],over:false,log:[],capW:[],capB:[],spec:[],trans:{},transNew:null,rallyCd:{},rallyFrom:null,rallyPre:null,lastMovedId:null,annFirst:{}};
   const key=run.ante+'-'+bi;
-  const enemy=(run.pending&&run.pending.key===key)?run.pending.enemy:enemyArmy(run.ante,bi,bossId);
+  let enemy=(run.pending&&run.pending.key===key)?run.pending.enemy:enemyArmy(run.ante,bi,bossId);
+  const shuffleBack=a=>{const back=shuffle(a.slice(0,8)); for(let i=0;i<8;i++) a[i]=back[i]; return a;};
+  if(onBoard('freestyle')) enemy=shuffleBack(enemy.slice());
   const ki=enemy.findIndex(d=>d&&d.type==='K'); if(bossId&&ki>=0){enemy[ki].name=BOSS_BY[bossId].name; enemy[ki].boss=bossId;}
-  const army=run.army.slice();
+  const army=run.army.slice(); if(onBoard('freestyle')) shuffleBack(army);
   if(hasRelic('glass')){const pi=army.map((d,i)=>d&&d.type==='P'?i:-1).filter(i=>i>=0); if(pi.length) army[rnd(pi)]=null;}
   if(bossId==='hex'||bossId==='gambit'){let gone=false; army.forEach((d,i)=>{if(d&&d.type==='Q'){army[i]=null; gone=true;}}); if(!gone){const r=army.findIndex(d=>d&&d.type==='R'); if(r>=0) army[r]=null;}}
   const extras=bossId==='wall'?[2,3,4,5].map(f=>[rc(5,f),{id:UID++,type:'P',name:rnd(PERSONA.P.enemy),ed:null},'b']):null;
@@ -1785,7 +1879,7 @@ async function startRound(){
   setEvent(BLIND[bi].name+(bossId?' vs '+BOSS_BY[bossId].name:''),bossId?'Checkmate to win':'Score '+fmt(RS.target));
   setOpp(oppName,bossId?BOSS_BY[bossId].desc:'Black pieces',rating(run.ante,bi,bossId));
   calcSet(0,0,'Capture to score'); setTurn('Get ready…',null);
-  clearBoardToys(); hud(); renderMoves(); renderCaps();
+  clearBoardToys(); hud(); renderMoves(); renderCaps(); applyBoardSkin(boardId());
   RS.b=await placeArmies(army,enemy,!!bossId,true,extras);
   const ek=toys[kingSq(RS.b,-1)]; if(ek){ek.setExpr('smug',2); say(ek,bossId?rnd(BOSS_BY[bossId].lines.intro):rnd(ENEMY_LINES.taunt),2.6);}
   await wait(.7);
@@ -1885,7 +1979,7 @@ async function promote(t){
   const nt=new Toy({id:UID++,type:'Q',name:t.name,ed:t.ed},t.side); nt.cell=t.cell; nt.root.position.copy(t.root.position);
   burst(t.center(),['#ffd34d','#ffffff','#ff7ac0'],30,4,.07,4,1); ring(t.root.position,0xffd34d,4,.5); sfx('promote');
   t.dispose(); toys[nt.cell]=nt; nt.sqz=.3; await tween(.35,e=>{nt.sqz=.3+.7*e;},Ez.back);
-  nt.setExpr('love',1.6); say(nt,nt.side==='w'?'I\'M A QUEEN NOW!':'Behold my glow-up.');
+  nt.setExpr('love',1.6); say(nt,nt.side==='w'?'I\'M A QUEEN NOW!':'Behold my glow-up.'); if(nt.side==='w') unlockBoard('royal');
 }
 async function playerMove(m){
   busy=true; deselect(); setTurn('Moving…',null);
@@ -1913,8 +2007,8 @@ async function playerMove(m){
     await enemyTurn();
   }catch(err){console.error(err); animating=false; busy=false; if(RS) RS.turn='w'; setTurn('Your move','w');}
 }
-function aiDepth(){let d=run.ante<=1?1:run.ante<=4?2:3; if(RS.boss==='tyrant') d=Math.min(3,d+1); if(hasCharter('scout2')&&!RS.mateOnly) d=Math.max(1,d-1); return d;}
-function aiNoise(){const n=[140,60,30,18,10,6,4,2][Math.min(7,run.ante-1)]; return (RS.boss?n*.5:n)*(hasCharter('scout1')?1.8:1);}
+function aiDepth(){let d=run.ante<=1?1:run.ante<=4?2:3; if(RS.boss==='tyrant') d=Math.min(3,d+1); if(onBoard('grandmaster')) d=Math.min(3,d+1); if(hasCharter('scout2')&&!RS.mateOnly) d=Math.max(1,d-1); return d;}
+function aiNoise(){const n=[140,60,30,18,10,6,4,2][Math.min(7,run.ante-1)]; return (RS.boss?n*.5:n)*(hasCharter('scout1')?1.8:1)*(onBoard('grandmaster')?.4:1);}
 async function enemyTurn(){
   RS.turn='b'; setTurn('Waiting for Black…','b'); thaw(); unlockAll();
   const ek=toys[kingSq(RS.b,-1)]; if(ek) ek.setExpr('smug',1.2);
@@ -1972,6 +2066,8 @@ async function scoreEvent(att,vt,check,entry){
   if(ann==='!!'&&cap&&!RS.annFirst[att.def.id]){RS.annFirst[att.def.id]=1; S.mult*=3; await step('!! Brilliant Move ×3 Brilliance','xmult','cMult','xmult');}
   if(ann==='!?'&&cap){att.def.annV=(att.def.annV||0)+1; S.mult+=att.def.annV; await step(`!? Interesting Move +${att.def.annV} Brilliance`,'mult','cMult','mult');}
   if(ann==='+'&&check){S.chips+=50; S.mult+=4; await step('+ Check! +50 Material, +4 Brilliance','chips','cChips');}
+  if(cap&&onBoard('freestyle')){S.mult+=3; await step('Freestyle Board +3 Brilliance','mult','cMult','mult');}
+  if(cap&&onBoard('blitz')){S.mult*=1.5; await step('Blitz Board ×1.5 Brilliance','xmult','cMult','xmult');}
   const kq=kingSq(RS.b,1), ac=att.cell;
   const ctx={cap,at,vt,check,run,st:RS,mine:countSide(1),theirs:countSide(-1),pawns:countType(P),nearKing:cap&&kq>=0&&ac>=0&&Math.max(Math.abs((kq>>3)-(ac>>3)),Math.abs((kq&7)-(ac&7)))<=1};
   for(let i=0;i<run.relics.length;i++){
@@ -1998,6 +2094,7 @@ async function scoreEvent(att,vt,check,entry){
 
 // ---------- round end ----------
 async function winRound(kind){
+  unlockBoard('tournament'); if(RS.moves>=6) unlockBoard('blitz');
   RS.over=true; busy=true; setTurn(kind==='mate'?'Checkmate!':'Target reached',null);
   if(kind==='mate') run.stats.mates=(run.stats.mates||0)+1;
   const ek=toys[kingSq(RS.b,-1)];
@@ -2522,7 +2619,7 @@ function buildShopRoom(){
   boxM(8*TS+.24,.04,2*TS+.24,brassM,[0,.01,BOARD_Z]);
   for(let i=0;i<16;i++){const p=tilePos(i), dark=(((i<8?0:1)+(i&7))%2)===0;
     const m=new THREE.Mesh(new THREE.BoxGeometry(TS*.97,.03,TS*.97),new THREE.MeshToonMaterial({color:dark?'#9a6a4b':'#ecd8b4',gradientMap:gradTex}));
-    m.position.set(p.x,.04,p.z); m.receiveShadow=true; m.userData.tile=i; sScene.add(m); tiles.push(m);}
+    m.position.set(p.x,.04,p.z); m.receiveShadow=true; m.userData.tile=i; m.userData.dark=dark; sScene.add(m); tiles.push(m);}
   // cushions and cloches for curios for sale
   for(let i=0;i<2;i++){const x=SLOT_X[i];
     part(sScene,sph(.4),cmat('#6a1424'),[x,SHELF.cur+.1,ITEM_Z],[1,.25,1],null,0); part(sScene,torG(.38,.02),metal(C.gold,90),[x,SHELF.cur+.1,ITEM_Z],null,[Math.PI/2,0,0],0);
@@ -2595,7 +2692,7 @@ function refreshTags(){
     const lab=it.kind==='curio'?'curio':it.kind==='work'?kindLabel(S.work[it.i]).toLowerCase():it.kind==='lot'?LOTS[S.lots[it.i].kind].name.toLowerCase():it.kind==='charter'?'club charter':'new stock';
     inner.innerHTML=`<b>£${cost}</b><small>${lab}</small>`; it.tag.classList.toggle('poor',run.money<cost);}
 }
-function refreshShopHud(){$('sMoney').textContent='£'+run.money; $('sCab').textContent=run.relics.length+' of '+relicMax(); refreshTags();}
+function refreshShopHud(){checkArmyUnlocks(); $('sMoney').textContent='£'+run.money; $('sCab').textContent=run.relics.length+' of '+relicMax(); refreshTags();}
 function sSay(t,text,dur){if(!t||!t.alive) return; sBubs=sBubs.filter(b=>{if(b.t===t){b.el.remove(); return false;} return true;});
   if(sBubs.length>=3){const o=sBubs.shift(); o.el.remove();}
   const el=document.createElement('div'); el.className='bubble'; el.textContent=text; sBubEl.appendChild(el); sBubs.push({t,el,until:clock+(dur||1.9)});}
@@ -2903,6 +3000,7 @@ function showShop(){
   shopEl.hidden=false; shopOpen=true;
   if(!shopR){shopR=new THREE.WebGLRenderer({canvas:shopCanvas,antialias:true}); shopR.setPixelRatio(Math.min(window.devicePixelRatio||1,2)); shopR.shadowMap.enabled=true; shopR.shadowMap.type=THREE.PCFSoftShadowMap; new ResizeObserver(frameShop).observe(sBody);}
   if(!sBuilt){buildShopRoom(); sBuilt=true;}
+  {const k=BOARD_BY[boardId()].skin; for(const tl of tiles) tl.material.color.set(tl.userData.dark?k.dark:k.light);}
   sSel=null; sPending=null; sSwap=-1; busyShop=false; closePlacard(); clearHighlights(); frameShop();
   if(!run.charters) run.charters=[]; if(!run.shop.lots) run.shop.lots=[mkLot(),mkLot()];
   if(!run.charterOffer||run.charterOffer.ante!==run.ante){const id=pickCharter(); run.charterOffer=id?{ante:run.ante,id,sold:false}:null;}
@@ -2976,21 +3074,52 @@ function showTitle(){
   setOpp('Black','Waiting at the board',''); setGoal(false,0,0); $('hOf').textContent='/ —';
   $('hMoves').textContent=BASE_MOVES; $('hMoney').textContent=money(run?run.money:4); $('meClock').classList.remove('low');
   calcSet(0,0,'Capture to score'); setTurn('Welcome',null); renderMoves(); renderCaps(); renderRelics();
-  enterTitle(); renderTitleMenu(); demoBoard();
+  enterTitle(); renderTitleMenu(); applyBoardSkin(prefBoard()); demoBoard();
 }
 function renderTitleMenu(){
-  const saved=loadSave(), R=records();
+  const saved=loadSave(), R=records(); $('tPick').hidden=true; $('tMenu').hidden=false;
   $('tMenu').innerHTML=(saved?`<button class="tBtn play" id="tCont" type="button">Continue<small>${saved.ante<=8?'Event '+roman(saved.ante):'Exhibition'} · ${money(saved.money)}</small></button><button class="tBtn" id="tNew" type="button">New run<small>starts over</small></button>`
-      :`<button class="tBtn play" id="tNew" type="button">Play<small>start a new run</small></button>`)
-    +`<button class="tBtn brass" id="tAlm" type="button">Almanac<small>curios, bosses &amp; more</small></button><button class="tBtn blood" id="tHow" type="button">How to play<small>the rules</small></button><button class="tBtn" id="tOpt" type="button">Options<small>sound &amp; speed</small></button>`;
+      :`<button class="tBtn play" id="tNew" type="button">Play<small>choose a board</small></button>`)
+    +`<button class="tBtn brass" id="tAlm" type="button">Almanac<small>boards, curios &amp; bosses</small></button><button class="tBtn blood" id="tHow" type="button">How to play<small>the rules</small></button><button class="tBtn" id="tOpt" type="button">Options<small>sound &amp; speed</small></button>`;
   $('tFoot').innerHTML=(R.furthest?`Best: <b>${R.furthest<=8?'Event '+roman(R.furthest):eventName(R.furthest)}</b>${R.best?` · best capture <b>${fmt(R.best)}</b>`:''}${R.mates?` · <b>${R.mates}</b> checkmate${R.mates>1?'s':''}`:''}${R.champion?` · World Champion <b>×${R.champion}</b>`:''}<br>`:'')
     +'Drag to turn the board. Tap a piece to poke it.';
   const go=(id,fn)=>{const el=$(id); if(el) el.onclick=()=>{initAudio(); sfx('select'); fn(el);};};
   go('tNew',el=>{
     if(saved&&!el.classList.contains('arm')){el.classList.add('arm'); el.innerHTML='New run<small>tap again: your saved run is lost</small>'; return;}
-    clearSave(); newRun(); countRun(); leaveTitle(showBlinds);});
+    showBoardPicker();});
   go('tCont',()=>{run=saved; if(!run.charters) run.charters=[]; let mx=0; for(const d of run.army) if(d) mx=Math.max(mx,d.id); UID=mx+1; leaveTitle(()=>{if(run.phase==='shop'&&run.shop) showShop(); else showBlinds();});});
-  go('tAlm',()=>showAlmanac('curios')); go('tHow',showHowTo); go('tOpt',showOptions);
+  go('tAlm',()=>showAlmanac('boards')); go('tHow',showHowTo); go('tOpt',showOptions);
+}
+const swStyle=b=>`--l:${b.skin.light};--d:${b.skin.dark};--f:${b.skin.frame}`;
+const prefBoard=()=>{const id=(loadJSON(PREFS_KEY)||{}).board; return BOARD_BY[id]&&isUnlocked(id)?id:'club';};
+let pickIdx=0;
+function showBoardPicker(){pickIdx=Math.max(0,BOARDS.findIndex(b=>b.id===prefBoard())); $('tMenu').hidden=true; $('tPick').hidden=false; renderPicker(true);}
+function renderPicker(first){
+  const st=boardStore(), b=BOARDS[pickIdx], open=st.unlocked.includes(b.id), best=st.best[b.id];
+  const bestTxt=best?`Best: beat ${best<=8?'Event '+roman(best):eventName(best)}${st.champ[b.id]?' · World Champion':''}`:'No event beaten on this board yet.';
+  $('tPick').innerHTML=`<div class="pRow"><button class="pArrow" type="button" data-pd="-1" aria-label="Previous board">‹</button>
+    <div class="pCard${open?'':' locked'}"><span class="pSw" style="${swStyle(b)}"></span><div class="pTxt"><span class="pK">Board ${pickIdx+1} of ${BOARDS.length}${open?'':' · locked'}</span><b>${b.name}</b><p>${b.effect}</p><small>${open?bestTxt:'Unlock: '+b.unlock}</small></div></div>
+    <button class="pArrow" type="button" data-pd="1" aria-label="Next board">›</button></div>
+    <div class="pPips">${BOARDS.map((x,i)=>`<button type="button" class="pPip${i===pickIdx?' on':''}${st.unlocked.includes(x.id)?'':' locked'}" data-pi="${i}" style="${swStyle(x)}" aria-label="${x.name}${st.unlocked.includes(x.id)?'':' (locked)'}"></button>`).join('')}</div>
+    <div class="pActs"><button class="tBtn" type="button" id="pBack">Back<small>to the menu</small></button><button class="tBtn play" type="button" id="pStart" ${open?'':'disabled'}>${open?'Start run':'Locked'}<small>${b.name}</small></button></div>`;
+  const pick=i=>{pickIdx=(i+BOARDS.length)%BOARDS.length; sfx('swap'); renderPicker(false);};
+  $('tPick').querySelectorAll('[data-pd]').forEach(el=>el.onclick=()=>{initAudio(); pick(pickIdx+ +el.dataset.pd);});
+  $('tPick').querySelectorAll('[data-pi]').forEach(el=>el.onclick=()=>{initAudio(); if(+el.dataset.pi!==pickIdx) pick(+el.dataset.pi);});
+  $('pBack').onclick=()=>{initAudio(); sfx('select'); applyBoardSkin(prefBoard()); boardRipple(); renderTitleMenu();};
+  $('pStart').onclick=()=>{if(!open) return; initAudio(); sfx('promote'); saveJSON(PREFS_KEY,Object.assign(loadJSON(PREFS_KEY)||{},{board:b.id}));
+    clearSave(); newRun(b.id); countRun(); leaveTitle(showBlinds);};
+  applyBoardSkin(b.id); if(!first){boardRipple(); for(const t of toysAll){t.setExpr(open?'happy':'worried',1); if(Math.random()<.3) hopSmall(t);}}
+}
+document.addEventListener('keydown',e=>{if(!titleMode||$('tPick').hidden||!$('screen').hidden) return;
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault(); pickIdx+=e.key==='ArrowLeft'?-1:1; pickIdx=(pickIdx+BOARDS.length)%BOARDS.length; sfx('swap'); renderPicker(false);}
+  else if(e.key==='Escape') $('pBack').click();});
+const unlockQ=[]; let unlockShowing=false;
+function showUnlock(b){unlockQ.push(b); if(!unlockShowing) nextUnlock();}
+function nextUnlock(){
+  const b=unlockQ.shift(); if(!b){unlockShowing=false; return;} unlockShowing=true; const el=$('unlockNote');
+  el.innerHTML=`<span class="pSw" style="${swStyle(b)}"></span><div><small>New board unlocked</small><b>${b.name}</b><em>${b.effect}</em></div>`;
+  el.classList.remove('out'); el.hidden=false; el.style.animation='none'; void el.offsetWidth; el.style.animation=''; sfx('promote');
+  setTimeout(()=>{el.classList.add('out'); setTimeout(()=>{el.hidden=true; nextUnlock();},380);},4200);
 }
 const backBtn='<div class="row end"><button class="btn" id="bBack" type="button">Back</button></div>';
 function showHowTo(){
@@ -3001,11 +3130,12 @@ function showHowTo(){
       <dt>Endgame</dt><dd>Each event ends against a titled opponent. Points don't decide it: checkmate their King within the move limit.</dd>
       <dt>Defeat</dt><dd>Get checkmated, run out of moves, or stalemate, and the run is over.</dd>
       <dt>Between games</dt><dd>Spend your purse in the Curio Shoppe on curios, recruits, promotions and inlays. Open lots to choose from curios, annotations or recruits, and sign one club charter per event for a lasting edge. Win eight events to become World Champion.</dd>
+      <dt>Boards</dt><dd>Every run is played on a board you choose before it starts. Each board has its own look and its own rules. Only the Club Board is open at first; the rest unlock as you play.</dd>
       <dt>Controls</dt><dd>Tap a piece, then a marked square. Worried eyes mean that piece is under attack. Drag to turn the board, scroll or pinch to zoom, right-drag or use two fingers to pan.</dd>
     </dl>${backBtn}`,true);
   on('bBack',hideScreen);
 }
-const ALM_TABS=[['curios','Curios'],['rare','Rare pieces'],['ann','Annotations'],['charters','Charters'],['bosses','Endgame bosses']];
+const ALM_TABS=[['boards','Boards'],['curios','Curios'],['rare','Rare pieces'],['ann','Annotations'],['charters','Charters'],['bosses','Endgame bosses']];
 function showAlmanac(tab){
   const card=(pic,meta,name,desc,extra)=>`<div class="lotcard"><div class="pic">${pic}</div>${meta?`<span class="meta">${meta}</span>`:''}<b>${name}</b><small>${desc}${extra||''}</small></div>`;
   const ph=key=>`<img data-thumb="${key}" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">`;
@@ -3014,6 +3144,7 @@ function showAlmanac(tab){
   if(tab==='rare') items=RARE_T.map(t=>{const R=RARE[t]; return card(ph('piece:'+t),'£'+R.cost,'The '+R.name,R.move,`<br><b>${R.ab}:</b> ${R.abDesc}<br><i>Unlock: ${R.feat}.</i>`);}).join('');
   if(tab==='ann') items=ANN_KEYS.map(k=>card(`<span class="annmark">${k}</span>`,'Annotation',ANNOT[k].name,ANNOT[k].desc)).join('');
   if(tab==='charters') items=CHARTERS.map(c=>card(`<span class="annmark" style="font-size:24px">§</span>`,c.req?'Follows '+CHARTER_BY[c.req].name:'Club charter',c.name,c.desc)).join('');
+  if(tab==='boards'){const st=boardStore(); items=BOARDS.map(b=>{const open=st.unlocked.includes(b.id); return card(`<span class="pSw" style="${swStyle(b)}${open?'':';filter:grayscale(.8) brightness(.55)'}"></span>`,open?(st.best[b.id]?'Best: beat Event '+roman(Math.min(20,st.best[b.id])):'Unlocked'):'Locked',b.name,b.effect,b.unlock?`<br><i>Unlock: ${b.unlock}</i>`:'');}).join('');}
   if(tab==='bosses') items=BOSSES.map(b=>card(ph('boss:'+b.id),'From event '+roman(b.min||1),b.name,b.desc,`<br><i>“${b.lines.intro[0]}”</i>`)).join('');
   showScreen(`<span class="eyebrow">The Almanac</span><h2>Everything you can meet on a run</h2>
     <div class="tabs" role="tablist">${ALM_TABS.map(([k,l])=>`<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${k===tab}">${l}</button>`).join('')}</div>
@@ -3060,7 +3191,7 @@ frameHooks.push(dt=>{
   if(clock>tBlink){tBlink=clock+2.2+Math.random()*4; const eyes=document.querySelectorAll('.tEye'); eyes.forEach(e=>e.classList.add('blink')); setTimeout(()=>eyes.forEach(e=>e.classList.remove('blink')),130);}
 });
 
-function previewArmy(drop){clearBoardToys(); return placeArmies(run.army,null,false,drop).then(b=>{RS=null; return b;});}
+function previewArmy(drop){applyBoardSkin(boardId()); clearBoardToys(); return placeArmies(run.army,null,false,drop).then(b=>{RS=null; return b;});}
 function showBlinds(){
   RS=null; run.phase='blind'; busy=true;
   const bi=run.blind, bid=bossFor(run.ante), boss=BOSS_BY[bid], key=run.ante+'-'+bi;
@@ -3073,7 +3204,7 @@ function showBlinds(){
     return `<div class="fixture${st}${i===2?' boss':''}"><div class="no">${pic?`<img class="bossPic" src="${pic}" alt="${boss.name}">`:roman(i+1)}</div><div><b>${nm}</b><span class="elo">${rating(run.ante,i,i===2?bid:null)}</span><small>${goal}</small>${quote}</div><div class="rw">${i<bi?'Won':money(BLIND[i].reward)}</div></div>`;}).join('');
   const theirs=run.pending.enemy.filter(Boolean).map(d=>gl(d.type)).join(' ');
   const mine=run.army.filter(d=>d&&!(bi===2&&bid==='gambit'&&d.type==='Q')).map(d=>glw(d.type)).join(' ');
-  showScreen(`<div class="row spread"><div><span class="eyebrow">${run.ante<=8?`Event ${roman(run.ante)} of VIII`:'Exhibition'}</span><h2>${eventName(run.ante)}</h2></div><div class="pursebig">${money(run.money)}</div></div>
+  showScreen(`<div class="row spread"><div><span class="eyebrow">${run.ante<=8?`Event ${roman(run.ante)} of VIII`:'Exhibition'} · ${BOARD_BY[boardId()].name}</span><h2>${eventName(run.ante)}</h2></div><div class="pursebig">${money(run.money)}</div></div>
     <div class="fixtures">${rows}</div>
     <div><h3>Black</h3><div class="glyphs">${theirs}</div></div>
     <div><h3>White · you</h3><div class="glyphs">${mine}</div></div>
@@ -3086,12 +3217,13 @@ function showBlinds(){
 function showCashOut(kind){
   const bi=run.blind, boss=RS.boss?BOSS_BY[RS.boss]:null, lines=[];
   lines.push([boss?`Endgame won against ${boss.name}`:`${BLIND[bi].name} won`,BLIND[bi].reward]);
-  const per=hasRelic('tempo')?2:1; if(RS.moves>0) lines.push([`${RS.moves} move${RS.moves>1?'s':''} to spare × ${money(per)}`,RS.moves*per]);
+  const per=(hasRelic('tempo')?2:1)+(onBoard('ledger')?1:0); if(RS.moves>0) lines.push([`${RS.moves} move${RS.moves>1?'s':''} to spare × ${money(per)}`,RS.moves*per]);
   if(kind==='mate'&&!RS.mateOnly) lines.push(['Checkmate bonus',3]);
   if(kind==='mate'&&hasRelic('regicide')) lines.push(['Regicide',5]);
   if(RS.mateOnly){const sp=Math.min(5,Math.floor(RS.score/Math.max(1,anteBase(run.ante)*.5))); if(sp) lines.push([`Style prize for ${fmt(RS.score)} points`,sp]);}
   if(hasRelic('piggy')) lines.push(['Prize Fund',3]);
-  const interest=Math.min(interestCap(),Math.floor(run.money/5)); if(interest) lines.push(['Interest, £1 per £5 held',interest]);
+  const interest=onBoard('ledger')?0:Math.min(interestCap(),Math.floor(run.money/5)); if(interest) lines.push(['Interest, £1 per £5 held',interest]);
+  if(onBoard('grandmaster')) lines.push(['Grandmaster Board: prizes doubled',lines.reduce((s,l)=>s+l[1],0)]);
   const total=lines.reduce((s,l)=>s+l[1],0);
   showScreen(`<span class="eyebrow">${eventName(run.ante)}</span><h2>${kind==='mate'?'Checkmate':'Game won'}</h2>
     <p>${RS.mateOnly?`You mated ${boss.name} with ${RS.moves} move${RS.moves===1?'':'s'} to spare.`:`Final score ${fmt(RS.score)} against a target of ${fmt(RS.target)}.`}</p>
@@ -3099,6 +3231,7 @@ function showCashOut(kind){
     <div class="row end"><button class="btn brass" id="bCash" type="button">Collect ${money(total)}</button></div>`);
   on('bCash',()=>{
     run.money+=total; sfx('coin'); RS=null; run.pending=null;
+    if(total>=12) unlockBoard('ledger'); if(run.blind===2) boardEventCleared(run.ante);
     const wasBoss=run.blind===2; run.blind++;
     if(run.blind>2){run.blind=0; run.ante++;}
     if(wasBoss&&run.ante===9&&!run.endless){save(); return showVictory();}
@@ -3108,7 +3241,7 @@ function showCashOut(kind){
 
 // ---------- endings ----------
 function statsHtml(){const s=run.stats; return ledger([
-  ['Furthest event',run.ante<=8?`${roman(run.ante)} · ${eventName(run.ante)}`:eventName(run.ante)],['Games won',s.rounds],['Checkmates delivered',s.mates||0],
+  ['Board',BOARD_BY[boardId()].name],['Furthest event',run.ante<=8?`${roman(run.ante)} · ${eventName(run.ante)}`:eventName(run.ante)],['Games won',s.rounds],['Checkmates delivered',s.mates||0],
   ['Pieces captured',s.caps],['Best single capture',fmt(s.best)+(s.bestLabel?` (${s.bestLabel})`:'')]]);}
 function showGameOver(kind){
   const mate=RS&&RS.mateOnly;
@@ -3117,10 +3250,10 @@ function showGameOver(kind){
   recordRun(false);
   showScreen(`<span class="eyebrow">${eventName(run.ante)}</span><h2>${head}</h2><p>${why}</p><h3>Your run</h3>${statsHtml()}
     <div class="row end"><button class="btn ghost sm" id="bMenu" type="button">Main menu</button><button class="btn" id="bAgain" type="button">New run</button></div>`);
-  on('bAgain',()=>{newRun(); countRun(); showBlinds();}); on('bMenu',showTitle);
+  on('bAgain',()=>{newRun(boardId()); countRun(); showBlinds();}); on('bMenu',showTitle);
 }
 function showVictory(){
-  recordRun(true); sfx('win'); burst(V3(0,1,0),['#ecd08a','#f2e8d0','#8c2b2d','#c9a24a'],80,7,.08,7,2,-9);
+  recordRun(true); {const st=boardStore(); st.champ[boardId()]=true; saveJSON(BOARDS_KEY,st);} unlockBoard('grandmaster'); sfx('win'); burst(V3(0,1,0),['#ecd08a','#f2e8d0','#8c2b2d','#c9a24a'],80,7,.08,7,2,-9);
   showScreen(`<p class="ornament">${['K','Q','K'].map(glw).join('')}</p><h1 class="logo"><small>Googly Gambit</small>World Champion</h1>
     <p class="sub">Eight events, eight titled opponents mated. The pieces will be talking about this for weeks.</p><h3>Your run</h3>${statsHtml()}
     <div class="row end"><button class="btn ghost sm" id="bMenu" type="button">Main menu</button><button class="btn blood" id="bEndless" type="button">Keep playing exhibitions</button></div>`);
@@ -3129,7 +3262,7 @@ function showVictory(){
 }
 
 // ---------- tools ----------
-const savePrefs=()=>saveJSON(PREFS_KEY,{sound:soundOn,speed:SPEED,view:viewMode});
+const savePrefs=()=>saveJSON(PREFS_KEY,Object.assign(loadJSON(PREFS_KEY)||{},{sound:soundOn,speed:SPEED,view:viewMode}));
 function setSound(on){soundOn=on; $('bSound').textContent=on?'Sound on':'Sound off'; savePrefs();}
 function setSpeed(n){SPEED=n; $('bSpeed').textContent=n+'×'; savePrefs();}
 function setViewMode(m){viewMode=m; $('bView').textContent=m?'Top':'Tilt'; if(!titleMode) VIEW.pitch=0; frameCamera(); savePrefs();}
