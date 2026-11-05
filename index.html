@@ -268,6 +268,59 @@ button{font:inherit;color:inherit}
 .nameplate p.rare i{color:#6a3a8a}
 .bossPic{display:block;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#3a2418,#150e0a 75%);box-shadow:0 0 0 2px var(--blood),0 0 0 4px var(--paper),0 0 0 5px var(--brass-d)}
 .fixture .quote{font-style:italic;color:var(--blood)}
+/* the title: a floating board over a checkerboard vortex, gilt lettering with googly eyes, chunky press-down buttons */
+body.titlemode #app>*:not(#stage){visibility:hidden}
+body.titlemode #stage{position:fixed;inset:0;z-index:30;border:0;border-radius:0;box-shadow:none}
+body.titlemode #stage .tools,body.titlemode #nameplate{visibility:hidden}
+.title{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;justify-content:space-between;align-items:center;gap:12px;padding:max(18px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(14px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));pointer-events:none;transition:opacity .35s}
+.title.leaving{opacity:0}
+.tLogo{margin:0;display:flex;flex-direction:column;align-items:center;line-height:.92;filter:drop-shadow(0 5px 0 #000a) drop-shadow(0 16px 26px #000c);animation:logoIn .9s cubic-bezier(.2,1.5,.4,1) both;pointer-events:auto}
+@keyframes logoIn{from{transform:translateY(-50px) scale(.75);opacity:0}}
+.tW1,.tW2{display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:700}
+.tW1{font-size:clamp(42px,10vw,100px);letter-spacing:.03em}
+.tW2{font-size:clamp(54px,13.5vw,148px);letter-spacing:.05em;margin-top:-.02em}
+.tL{display:inline-block;animation:bob 2.6s ease-in-out infinite;animation-delay:calc(var(--i)*-.21s)}
+.tW1 .tL{background:linear-gradient(180deg,#fff4c4 0%,#ecd08a 38%,#b8862a 62%,#f6d67e 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:.03em #3a2410}
+.tW2 .tL{color:var(--paper);-webkit-text-stroke:.025em #2a1a0e;text-shadow:0 .045em 0 var(--blood),0 .085em 0 var(--blood-d)}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2.5deg)}50%{transform:translateY(-.07em) rotate(2.5deg)}}
+.tEye{display:inline-grid;place-items:center;width:.72em;height:.72em;margin:0 .035em;border-radius:50%;background:radial-gradient(circle at 42% 38%,#fff,#ebe2d0 72%);box-shadow:0 0 0 .065em #1a1210,0 0 0 .1em #ecd08a,0 0 0 .125em #3a2410;animation:bob 2.6s ease-in-out infinite;animation-delay:calc(var(--i)*-.21s)}
+.tEye i{width:.34em;height:.34em;border-radius:50%;background:#140e0c;position:relative;transition:transform .09s linear}
+.tEye i::after{content:"";position:absolute;width:.1em;height:.1em;border-radius:50%;background:#fff;left:.07em;top:.06em}
+.tEye.blink{clip-path:inset(46% 0 46% 0)}
+.tRibbon{margin-top:.55em;font-family:var(--f-body);font-style:italic;font-weight:600;font-size:clamp(15px,2.2vw,21px);letter-spacing:.04em;color:var(--paper);background:linear-gradient(180deg,#a83234,var(--blood) 60%,var(--blood-d));padding:.32em 2.4em .38em;clip-path:polygon(0 0,100% 0,95% 50%,100% 100%,0 100%,5% 50%)}
+.tBottom{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;pointer-events:none}
+.tMenu{display:flex;gap:14px;justify-content:center;align-items:flex-end;flex-wrap:wrap;max-width:1200px;pointer-events:auto;animation:menuIn .7s .2s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes menuIn{from{transform:translateY(70px);opacity:0}}
+.tBtn{--c:#2a1d18;--d:#0e0907;--t:var(--paper);display:flex;flex-direction:column;align-items:center;gap:3px;min-width:150px;padding:13px 22px 11px;border:0;border-radius:7px;cursor:pointer;color:var(--t);background:linear-gradient(180deg,#ffffff1f,#0000 45%),var(--c);font-family:var(--f-display);font-weight:700;font-size:16px;letter-spacing:.12em;text-transform:uppercase;box-shadow:0 6px 0 var(--d),0 12px 20px #000b,inset 0 0 0 2px #ffffff26,inset 0 0 0 4px var(--c),inset 0 0 0 5px #ecd08a77;transition:transform .08s,box-shadow .08s;-webkit-user-select:none;user-select:none}
+.tBtn small{font-family:var(--f-body);font-style:italic;font-weight:500;font-size:14px;letter-spacing:0;text-transform:none;opacity:.88}
+.tBtn:hover{transform:translateY(-2px);box-shadow:0 8px 0 var(--d),0 14px 22px #000b,inset 0 0 0 2px #ffffff26,inset 0 0 0 4px var(--c),inset 0 0 0 5px #ecd08aaa}
+.tBtn:active{transform:translateY(5px);box-shadow:0 1px 0 var(--d),0 4px 10px #000b,inset 0 0 0 2px #ffffff26,inset 0 0 0 4px var(--c),inset 0 0 0 5px #ecd08aaa}
+.tBtn:focus-visible{outline:3px solid var(--brass-hi);outline-offset:4px}
+.tBtn.play{--c:var(--baize);--d:#163022;min-width:230px;padding:17px 32px 13px;font-size:24px}
+.tBtn.brass{--c:#c9a24a;--d:#7d5f24;--t:#2a1d0e}
+.tBtn.blood{--c:var(--blood);--d:var(--blood-d)}
+.tBtn.arm{--c:#5a1a1c;--d:#2a0a0b}
+.tFoot{margin:0;font-style:italic;font-size:15px;line-height:1.4;color:var(--paper2);text-align:center;text-shadow:0 1px 0 #000,0 0 12px #000,0 0 4px #000;pointer-events:auto;max-width:62ch}
+.tFoot b{font-style:normal;color:var(--brass-hi);font-variant-numeric:lining-nums}
+@media (max-width:640px){
+  .tMenu{gap:10px;max-width:420px}
+  .tBtn{flex:1 1 40%;min-width:0;padding:10px 10px 9px;font-size:13px}
+  .tBtn.play{flex-basis:100%;font-size:20px;padding:14px 20px 11px}
+  .tBtn small{font-size:13px}
+}
+/* almanac, options */
+.panel.wide{width:min(940px,100%)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{font-family:var(--f-display);font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:7px 12px;border:1px solid var(--ink2);border-radius:3px;background:transparent;color:var(--ink);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tab:focus-visible{outline:2px solid var(--brass-d);outline-offset:2px}
+.almGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.almGrid .lotcard .meta{font-family:var(--f-display);font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--blood)}
+.almGrid .lotcard i{color:var(--blood)}
+.opts{display:grid;gap:10px;border-top:1px solid var(--ink);padding-top:12px}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--rule);padding-bottom:10px}
+.opt span{font-size:17px}
+.seg{display:flex;gap:4px}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
 </style>
 
@@ -311,6 +364,10 @@ button{font:inherit;color:inherit}
   <header class="sign"><div><h2>The Curio Shoppe</h2><small>Fine curiosities &amp; chessmen · est. 1851</small></div><div class="spurse"><span class="coins"><i></i><i></i><i></i></span><div><small>Purse</small><b id="sMoney">£0</b></div></div></header>
   <div id="sBody" class="sbody"><canvas id="shopGl"></canvas><div id="sTags" class="layer"></div><div id="sBubbles" class="layer"></div><div id="placard" class="placard" hidden></div><div id="lotSheet" class="lotsheet" hidden><div class="lotbox" id="lotBox"></div></div></div>
   <footer class="sfoot"><p><span class="cab">Cabinet · <span id="sCab">0 of 5</span></span><span id="sHint"></span></p><button id="sLeave" class="door" type="button">Leave the shop →</button></footer>
+</div>
+<div id="title" class="title" hidden>
+  <h1 class="tLogo" aria-label="Googly Gambit"><span class="tW1" aria-hidden="true"><span class="tL" style="--i:0">G</span><span class="tEye" style="--i:1"><i></i></span><span class="tEye" style="--i:2"><i></i></span><span class="tL" style="--i:3">G</span><span class="tL" style="--i:4">L</span><span class="tL" style="--i:5">Y</span></span><span class="tW2" aria-hidden="true"><span class="tL" style="--i:6">G</span><span class="tL" style="--i:7">A</span><span class="tL" style="--i:8">M</span><span class="tL" style="--i:9">B</span><span class="tL" style="--i:10">I</span><span class="tL" style="--i:11">T</span></span><span class="tRibbon">A chess roguelike</span></h1>
+  <div class="tBottom"><div class="tMenu" id="tMenu"></div><p class="tFoot" id="tFoot"></p></div>
 </div>
 <div id="tip" class="tip" hidden></div>
 <div id="screen" hidden><div id="panel" class="panel"></div></div>
@@ -779,14 +836,26 @@ const camera=new THREE.PerspectiveCamera(36,1,.1,200);
 const camBase=new THREE.Vector3(), camLook=new THREE.Vector3(0,.25,.35);
 
 // lamplit backdrop: warm pool of light fading into a dark wood-panelled room
+let titleMode=false; const TITLE_HIDE=[];
 const bgScene=new THREE.Scene(), bgCam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
-const bgU={uTime:{value:0},uAsp:{value:1},uA:{value:new THREE.Color('#0d0806')},uB:{value:new THREE.Color('#3a2416')},uC:{value:new THREE.Color('#8a5a2a')}};
+const bgU={uTime:{value:0},uAsp:{value:1},uTitle:{value:0},uA:{value:new THREE.Color('#0d0806')},uB:{value:new THREE.Color('#3a2416')},uC:{value:new THREE.Color('#8a5a2a')}};
 const bgGoal={A:new THREE.Color('#0d0806'),B:new THREE.Color('#3a2416'),C:new THREE.Color('#8a5a2a')};
 bgScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.ShaderMaterial({uniforms:bgU,depthWrite:false,depthTest:false,
   vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',
-  fragmentShader:`uniform float uTime,uAsp;uniform vec3 uA,uB,uC;varying vec2 vUv;
+  fragmentShader:`uniform float uTime,uAsp,uTitle;uniform vec3 uA,uB,uC;varying vec2 vUv;
   void main(){vec2 p=(vUv-vec2(.5,.6))*vec2(uAsp,1.);float r=length(p);
-  vec3 c=mix(uB,uA,smoothstep(.05,.8,r));c+=uC*.12*(1.-smoothstep(0.,.5,r));gl_FragColor=vec4(c,1.);}`})));
+  vec3 c=mix(uB,uA,smoothstep(.05,.8,r));c+=uC*.12*(1.-smoothstep(0.,.5,r));
+  if(uTitle>.001){ // the title's checkerboard vortex: squares spiral in toward a dark centre
+    vec2 q=(vUv-vec2(.5,.5))*vec2(uAsp,1.);float rr=length(q),a=atan(q.y,q.x);
+    float tw=a+1.1/(rr+.22)-uTime*.12, z=log(rr+.03)*2.4-uTime*.32;
+    float chk=smoothstep(-.1,.1,sin(tw*8.)*sin(z*3.14159));
+    vec3 t=mix(vec3(.075,.045,.03),vec3(.46,.27,.13),chk);
+    t=mix(t,vec3(.42,.12,.13),.45*(sin(z*.55+uTime*.25)*.5+.5));
+    float ring=1.-smoothstep(.0,.06,abs(fract(z*.5+.25)-.5));
+    t+=vec3(.79,.62,.28)*ring*.22*smoothstep(.05,.4,rr);
+    t*=smoothstep(.02,.3,rr)*.75+.25; t*=1.-.55*smoothstep(.55,1.25,rr);
+    c=mix(c,t,uTitle);}
+  gl_FragColor=vec4(c,1.);}`})));
 function setBg(a,b,c){bgGoal.A.set(a);bgGoal.B.set(b);bgGoal.C.set(c);}
 scene.fog=new THREE.Fog(0x0d0806,20,50);
 
@@ -816,7 +885,7 @@ const sqPos=s=>new THREE.Vector3((s&7)-3.5,0,3.5-(s>>3));
       for(const off of [-512,0,512]){w2.beginPath(); for(let x=0;x<=512;x+=8) w2.lineTo(x,y+off+Math.sin(x/512*Math.PI*2*k+i)*6+Math.sin(x/512*Math.PI*14+i*2)*1.5); w2.stroke();}}
     const wt=new THREE.CanvasTexture(wc); wt.wrapS=wt.wrapT=THREE.RepeatWrapping; wt.repeat.set(6,6);
     const table=new THREE.Mesh(new THREE.PlaneGeometry(90,90),new THREE.MeshToonMaterial({map:wt,gradientMap:gradTex}));
-    table.rotation.x=-Math.PI/2; table.position.y=-.8; table.receiveShadow=true; boardG.add(table);
+    table.rotation.x=-Math.PI/2; table.position.y=-.8; table.receiveShadow=true; boardG.add(table); TITLE_HIDE.push(table);
   }
   const cv=document.createElement('canvas'); cv.width=cv.height=512; const g=cv.getContext('2d');
   g.fillStyle='#4a2e22'; g.fillRect(0,0,512,512); const u=512/9.2;
@@ -1475,7 +1544,9 @@ function frameCamera(){
   renderer.setSize(w,h,false); camera.aspect=asp; bgU.uAsp.value=asp; camera.updateProjectionMatrix();
   const elev=viewMode===1?1.42:(asp<.8?1.08:.98), vf=camera.fov*Math.PI/180, hf=2*Math.atan(Math.tan(vf/2)*asp);
   const dW=4.8/Math.tan(hf/2), dH=(4.75*Math.sin(elev)+1.3*Math.cos(elev))/Math.tan(vf/2);
-  fitD=Math.max(dW,dH)+.3; fitElev=elev; applyView();
+  fitD=Math.max(dW,dH)+.3; fitElev=elev;
+  if(titleMode) camera.setViewOffset(w,h,0,-h*(asp<.8?.02:.07),w,h); else camera.clearViewOffset();
+  applyView();
 }
 function rotateView(dx,dy){VIEW.yaw-=dx*.008; VIEW.pitch+=dy*.005; applyView();}
 function zoomView(f){VIEW.zoom*=f; applyView();}
@@ -1500,7 +1571,7 @@ function loop(now){
     if(q.life<=0){q.scn.remove(q.m); parts.splice(i,1);}}
   for(let i=rings.length-1;i>=0;i--){const r=rings[i]; r.t+=dt; const p=r.t/r.dur; r.m.scale.setScalar(1+p*r.max); r.m.material.opacity=1-p; if(p>=1){scene.remove(r.m); r.m.geometry.dispose(); r.m.material.dispose(); rings.splice(i,1);}}
   for(const M of marks) if(M.dot.visible||M.ring.visible||M.sp.visible){const s=1+Math.sin(clock*6)*.08; M.dot.scale.setScalar(s); M.ring.scale.setScalar(s); M.sp.scale.setScalar(s); M.sp.rotation.z=clock*1.5;}
-  const k=1-Math.exp(-dt*2); bgU.uA.value.lerp(bgGoal.A,k); bgU.uB.value.lerp(bgGoal.B,k); bgU.uC.value.lerp(bgGoal.C,k); bgU.uTime.value+=REDUCED?0:dt; scene.fog.color.copy(bgU.uA.value);
+  const k=1-Math.exp(-dt*2); bgU.uA.value.lerp(bgGoal.A,k); bgU.uB.value.lerp(bgGoal.B,k); bgU.uC.value.lerp(bgGoal.C,k); bgU.uTime.value+=REDUCED?0:dt; bgU.uTitle.value+=((titleMode?1:0)-bgU.uTitle.value)*Math.min(1,dt*2.5); scene.fog.color.copy(bgU.uA.value);
   camera.position.copy(camBase); if(shakeAmt>.001){camera.position.x+=(Math.random()-.5)*shakeAmt; camera.position.y+=(Math.random()-.5)*shakeAmt; shakeAmt*=Math.pow(.02,dt);}
   camera.lookAt(camLook);
   for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i]; if(clock>b.until||!b.toy.alive){b.el.remove(); bubbles.splice(i,1); continue;}
@@ -1520,7 +1591,7 @@ frameCamera(); requestAnimationFrame(loop);
   const shadowy=m=>{m.castShadow=true; m.receiveShadow=true; return m;};
   const cyl=(rt,rb,h,n)=>geo('Y'+rt+'_'+rb+'_'+h+'_'+(n||16),()=>new THREE.CylinderGeometry(rt,rb,h,n||16));
   // the chess clock: a walnut case with a sloped front; your face counts moves left, Black's dial ticks while it thinks
-  const ck=new THREE.Group(); ck.position.set(6.2,T,-2.7); ck.rotation.y=-.5; scene.add(ck);
+  const ck=new THREE.Group(); ck.position.set(6.2,T,-2.7); ck.rotation.y=-.5; scene.add(ck); TITLE_HIDE.push(ck);
   const sh=new THREE.Shape(); [[-.55,0],[.55,0],[.55,.18],[.22,1.05],[-.55,1.05]].forEach((q,i)=>i?sh.lineTo(q[0],q[1]):sh.moveTo(q[0],q[1]));
   const cg=new THREE.ExtrudeGeometry(sh,{depth:2.5,bevelEnabled:true,bevelSize:.03,bevelThickness:.03,bevelSegments:2}); cg.rotateY(-Math.PI/2); cg.translate(1.25,0,0);
   ck.add(shadowy(new THREE.Mesh(cg,wood)));
@@ -1554,7 +1625,7 @@ frameCamera(); requestAnimationFrame(loop);
     if(key===shown) return; shown=key; paint(0,{moves:mv,active:meOn,low}); paint(1,{active:oppOn});};
   if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{shown=''; refreshClock();});
   // the candle: brass chamberstick, a flickering flame and a warm light that reaches the board
-  const cd=new THREE.Group(); cd.position.set(-6.4,T,-3.4); scene.add(cd);
+  const cd=new THREE.Group(); cd.position.set(-6.4,T,-3.4); scene.add(cd); TITLE_HIDE.push(cd);
   shadowy(part(cd,lathe('candleHold',[[0,0],[.46,0],[.48,.04],[.4,.08],[.13,.12],[.1,.3],[.15,.36],[.17,.42],[0,.42]]),brassM));
   part(cd,torG(.14,.03),brassM,[.5,.1,0],null,[0,0,0],0);
   shadowy(part(cd,cyl(.11,.12,.95,16),ivory,[0,.9,0]));
@@ -1566,7 +1637,7 @@ frameCamera(); requestAnimationFrame(loop);
   const halo=new THREE.Mesh(sph(.42),new THREE.MeshBasicMaterial({color:0xffb050,transparent:true,opacity:.16,depthWrite:false,blending:THREE.AdditiveBlending})); flame.add(halo);
   const glow=new THREE.PointLight(0xffb060,1.1,11,1.6); glow.position.set(0,1.7,0); cd.add(glow);
   // books and a cup of tea
-  const bk=new THREE.Group(); bk.position.set(-6.1,T,-.7); bk.rotation.y=.55; bk.scale.setScalar(.85); scene.add(bk);
+  const bk=new THREE.Group(); bk.position.set(-6.1,T,-.7); bk.rotation.y=.55; bk.scale.setScalar(.85); scene.add(bk); TITLE_HIDE.push(bk);
   shadowy(part(bk,box(1.6,.24,1.1),toon('#6a1a1f'),[0,.12,0],null,null,0)); part(bk,box(1.5,.2,1.04),toon('#efe4c8'),[.04,.12,0],null,null,0);
   shadowy(part(bk,box(1.4,.2,.98),toon('#2d4a5a'),[.05,.34,0],null,[0,-.22,0],0)); part(bk,box(1.3,.16,.92),toon('#efe4c8'),[.08,.34,0],null,[0,-.22,0],0);
   part(bk,box(.06,.21,.99),brassM,[-.62,.34,-.16],null,[0,-.22,0],0);
@@ -2395,7 +2466,10 @@ const thumbCache={}, bossCache={}, TN=128, thumbRT=new THREE.WebGLRenderTarget(T
 thumbScene.add(new THREE.HemisphereLight(0xfff0d8,0x40281a,1)); {const l=new THREE.DirectionalLight(0xffffff,.8); l.position.set(2,4,5); thumbScene.add(l);}
 function renderThumb(obj,lift){
   thumbScene.add(obj); obj.updateMatrixWorld(true);
-  const box3=new THREE.Box3().setFromObject(obj), c=box3.getCenter(V3(0,0,0)), sz=box3.getSize(V3(0,0,0)), r=Math.max(sz.x,sz.y,sz.z)*.62;
+  const box3=new THREE.Box3(), gb=new THREE.Box3();
+  obj.traverse(o=>{if(!o.isMesh||!o.geometry||(o.material&&(o.material.blending===THREE.AdditiveBlending||o.material.side===THREE.BackSide))) return; if(!o.geometry.boundingBox) o.geometry.computeBoundingBox(); box3.union(gb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld));});
+  if(box3.isEmpty()) box3.setFromObject(obj);
+  const c=box3.getCenter(V3(0,0,0)), sz=box3.getSize(V3(0,0,0)), r=Math.max(sz.x,sz.y,sz.z)*.62;
   thumbCam.position.set(c.x,c.y+r*(lift==null?.45:lift),c.z+r/Math.tan(15*Math.PI/180)); thumbCam.lookAt(c);
   renderer.setRenderTarget(thumbRT); renderer.setClearColor(0x000000,0); renderer.clear(); renderer.render(thumbScene,thumbCam);
   const px=new Uint8Array(TN*TN*4); renderer.readRenderTargetPixels(thumbRT,0,0,TN,TN,px); renderer.setRenderTarget(null); renderer.setClearColor(0x000000,1);
@@ -2866,7 +2940,7 @@ const panel=$('panel');
 const money=n=>'£'+n;
 const ROMAN=['','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX'];
 const roman=n=>ROMAN[n]||String(n);
-function showScreen(html,clear){panel.innerHTML=html; $('screen').hidden=false; $('screen').classList.toggle('clear',!!clear); panel.scrollTop=0; panel.style.animation='none'; void panel.offsetWidth; panel.style.animation='';}
+function showScreen(html,clear,wide){panel.innerHTML=html; $('screen').hidden=false; $('screen').classList.toggle('clear',!!clear); panel.classList.toggle('wide',!!wide); panel.scrollTop=0; panel.style.animation='none'; void panel.offsetWidth; panel.style.animation='';}
 function hideScreen(){$('screen').hidden=true;}
 const on=(id,fn)=>{const el=$(id); if(el) el.onclick=e=>{initAudio(); fn(e);};};
 const ledger=(lines,total)=>`<div class="ledger">${lines.map(l=>`<div><span>${l[0]}</span><i></i><b>${l[1]}</b></div>`).join('')}${total!=null?`<div class="tot"><span>Total</span><i></i><b>${total}</b></div>`:''}</div>`;
@@ -2876,29 +2950,115 @@ async function demoBoard(){
   const w=startArmy(); w[3]=mkDef('Q','w'); w[8]=mkDef('P','w'); w[15]=mkDef('P','w'); uniqNames(w);
   await placeArmies(w,enemyArmy(1,0,'mirror'),false,true);
 }
+// ---------- title ----------
+const RECORDS_KEY='googly-gambit-records-v1', PREFS_KEY='googly-gambit-prefs-v1';
+function loadJSON(k){try{const v=localStorage.getItem(k); return v?JSON.parse(v):null;}catch(e){return null;}}
+function saveJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function records(){return Object.assign({runs:0,furthest:0,best:0,bestLabel:'',mates:0,champion:0},loadJSON(RECORDS_KEY)||{});}
+function recordRun(champion){
+  if(!run) return; const R=records(), s=run.stats;
+  R.furthest=Math.max(R.furthest,run.ante); R.mates+=s.mates||0; if(champion) R.champion++;
+  if(s.best>R.best){R.best=s.best; R.bestLabel=s.bestLabel||'';} saveJSON(RECORDS_KEY,R);
+}
+function countRun(){const R=records(); R.runs++; saveJSON(RECORDS_KEY,R);}
+function enterTitle(){
+  titleMode=true; document.body.classList.add('titlemode'); for(const o of TITLE_HIDE) o.visible=false;
+  VIEW.yaw=.55; VIEW.pitch=-.16; VIEW.zoom=stageEl.clientWidth<stageEl.clientHeight*.8?1.32:1.55; VIEW.pan.set(0,0,0); frameCamera(); $('title').hidden=false; $('title').classList.remove('leaving');
+}
+function exitTitle(){
+  titleMode=false; document.body.classList.remove('titlemode'); for(const o of TITLE_HIDE) o.visible=true;
+  VIEW.yaw=0; VIEW.pitch=0; VIEW.zoom=1; VIEW.pan.set(0,0,0); frameCamera(); $('title').hidden=true;
+}
+function leaveTitle(fn){if(!titleMode) return fn(); sfx('whoosh'); $('title').classList.add('leaving'); setTimeout(()=>{exitTitle(); fn();},REDUCED?0:330);}
 function showTitle(){
-  RS=null; busy=true;
+  RS=null; busy=true; hideScreen();
   $('evName').textContent='Googly Gambit'; $('evRound').textContent='A chess roguelike';
   setOpp('Black','Waiting at the board',''); setGoal(false,0,0); $('hOf').textContent='/ —';
   $('hMoves').textContent=BASE_MOVES; $('hMoney').textContent=money(run?run.money:4); $('meClock').classList.remove('low');
   calcSet(0,0,'Capture to score'); setTurn('Welcome',null); renderMoves(); renderCaps(); renderRelics();
-  const saved=loadSave();
-  showScreen(`<p class="ornament">${['K','Q','R','B','N','P'].map(glw).join('')}</p>
-    <h1 class="logo"><small>A chess roguelike</small>Googly Gambit</h1>
-    <p class="sub">Every piece has a name, a temper, and very worried eyes.</p>
+  enterTitle(); renderTitleMenu(); demoBoard();
+}
+function renderTitleMenu(){
+  const saved=loadSave(), R=records();
+  $('tMenu').innerHTML=(saved?`<button class="tBtn play" id="tCont" type="button">Continue<small>${saved.ante<=8?'Event '+roman(saved.ante):'Exhibition'} · ${money(saved.money)}</small></button><button class="tBtn" id="tNew" type="button">New run<small>starts over</small></button>`
+      :`<button class="tBtn play" id="tNew" type="button">Play<small>start a new run</small></button>`)
+    +`<button class="tBtn brass" id="tAlm" type="button">Almanac<small>curios, bosses &amp; more</small></button><button class="tBtn blood" id="tHow" type="button">How to play<small>the rules</small></button><button class="tBtn" id="tOpt" type="button">Options<small>sound &amp; speed</small></button>`;
+  $('tFoot').innerHTML=(R.furthest?`Best: <b>${R.furthest<=8?'Event '+roman(R.furthest):eventName(R.furthest)}</b>${R.best?` · best capture <b>${fmt(R.best)}</b>`:''}${R.mates?` · <b>${R.mates}</b> checkmate${R.mates>1?'s':''}`:''}${R.champion?` · World Champion <b>×${R.champion}</b>`:''}<br>`:'')
+    +'Drag to turn the board. Tap a piece to poke it.';
+  const go=(id,fn)=>{const el=$(id); if(el) el.onclick=()=>{initAudio(); sfx('select'); fn(el);};};
+  go('tNew',el=>{
+    if(saved&&!el.classList.contains('arm')){el.classList.add('arm'); el.innerHTML='New run<small>tap again: your saved run is lost</small>'; return;}
+    clearSave(); newRun(); countRun(); leaveTitle(showBlinds);});
+  go('tCont',()=>{run=saved; if(!run.charters) run.charters=[]; let mx=0; for(const d of run.army) if(d) mx=Math.max(mx,d.id); UID=mx+1; leaveTitle(()=>{if(run.phase==='shop'&&run.shop) showShop(); else showBlinds();});});
+  go('tAlm',()=>showAlmanac('curios')); go('tHow',showHowTo); go('tOpt',showOptions);
+}
+const backBtn='<div class="row end"><button class="btn" id="bBack" type="button">Back</button></div>';
+function showHowTo(){
+  showScreen(`<span class="eyebrow">How to play</span><h2>The laws of the board</h2>
     <dl class="laws">
       <dt>Points</dt><dd>A capture scores the victim's Material × your attacker's Brilliance. Humble Pawns strike with the most Brilliance.</dd>
       <dt>Opening &amp; Middlegame</dt><dd>Reach the points target before your moves run out. Checkmate also wins on the spot.</dd>
       <dt>Endgame</dt><dd>Each event ends against a titled opponent. Points don't decide it: checkmate their King within the move limit.</dd>
       <dt>Defeat</dt><dd>Get checkmated, run out of moves, or stalemate, and the run is over.</dd>
       <dt>Between games</dt><dd>Spend your purse in the Curio Shoppe on curios, recruits, promotions and inlays. Open lots to choose from curios, annotations or recruits, and sign one club charter per event for a lasting edge. Win eight events to become World Champion.</dd>
-    </dl>
-    <div class="row" style="justify-content:center">${saved?'<button class="btn" id="bCont" type="button">Continue run</button>':''}<button class="btn ${saved?'ghost':''}" id="bNew" type="button">New run</button></div>
-    <p class="muted" style="text-align:center;margin:0 auto">Tap a piece, then a marked square. Worried eyes mean that piece is under attack.<br>Drag to turn the board, scroll or pinch to zoom, right-drag or use two fingers to pan.</p>`,true);
-  on('bNew',()=>{clearSave(); newRun(); showBlinds();});
-  on('bCont',()=>{run=saved; let mx=0; for(const d of run.army) if(d) mx=Math.max(mx,d.id); UID=mx+1; if(run.phase==='shop'&&run.shop) showShop(); else showBlinds();});
-  demoBoard();
+      <dt>Controls</dt><dd>Tap a piece, then a marked square. Worried eyes mean that piece is under attack. Drag to turn the board, scroll or pinch to zoom, right-drag or use two fingers to pan.</dd>
+    </dl>${backBtn}`,true);
+  on('bBack',hideScreen);
 }
+const ALM_TABS=[['curios','Curios'],['rare','Rare pieces'],['ann','Annotations'],['charters','Charters'],['bosses','Endgame bosses']];
+function showAlmanac(tab){
+  const card=(pic,meta,name,desc,extra)=>`<div class="lotcard"><div class="pic">${pic}</div>${meta?`<span class="meta">${meta}</span>`:''}<b>${name}</b><small>${desc}${extra||''}</small></div>`;
+  const ph=key=>`<img data-thumb="${key}" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">`;
+  let items='';
+  if(tab==='curios') items=RELICS.map(r=>card(ph('curio:'+r.id),'£'+r.cost,r.name,relicDesc(r,{}))).join('');
+  if(tab==='rare') items=RARE_T.map(t=>{const R=RARE[t]; return card(ph('piece:'+t),'£'+R.cost,'The '+R.name,R.move,`<br><b>${R.ab}:</b> ${R.abDesc}<br><i>Unlock: ${R.feat}.</i>`);}).join('');
+  if(tab==='ann') items=ANN_KEYS.map(k=>card(`<span class="annmark">${k}</span>`,'Annotation',ANNOT[k].name,ANNOT[k].desc)).join('');
+  if(tab==='charters') items=CHARTERS.map(c=>card(`<span class="annmark" style="font-size:24px">§</span>`,c.req?'Follows '+CHARTER_BY[c.req].name:'Club charter',c.name,c.desc)).join('');
+  if(tab==='bosses') items=BOSSES.map(b=>card(ph('boss:'+b.id),'From event '+roman(b.min||1),b.name,b.desc,`<br><i>“${b.lines.intro[0]}”</i>`)).join('');
+  showScreen(`<span class="eyebrow">The Almanac</span><h2>Everything you can meet on a run</h2>
+    <div class="tabs" role="tablist">${ALM_TABS.map(([k,l])=>`<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${k===tab}">${l}</button>`).join('')}</div>
+    <div class="almGrid">${items}</div>${backBtn}`,true,true);
+  panel.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{sfx('select'); showAlmanac(b.dataset.tab);});
+  on('bBack',hideScreen); fillThumbs();
+}
+function fillThumbs(){ // portraits are rendered a few per frame so the page never stalls
+  const els=[...panel.querySelectorAll('[data-thumb]')];
+  const step=()=>{for(let k=0;k<2&&els.length;k++){const el=els.shift(); if(!el.isConnected) continue; const [kind,id]=el.dataset.thumb.split(':');
+      const src=kind==='curio'?curioThumb(id):kind==='boss'?bossThumb(id):pieceThumb(id); if(src) el.src=src; el.removeAttribute('data-thumb');}
+    if(els.length&&!$('screen').hidden) requestAnimationFrame(step);};
+  requestAnimationFrame(step);
+}
+function showOptions(){
+  const seg=(id,opts,cur)=>`<div class="seg">${opts.map(([v,l])=>`<button class="btn sm ${v===cur?'':'ghost'}" type="button" data-${id}="${v}">${l}</button>`).join('')}</div>`;
+  showScreen(`<span class="eyebrow">Options</span><h2>At the club</h2>
+    <div class="opts">
+      <div class="opt"><span>Sound</span>${seg('snd',[['1','On'],['0','Off']],soundOn?'1':'0')}</div>
+      <div class="opt"><span>Animation speed</span>${seg('spd',[['1','1×'],['2','2×'],['3','3×']],String(SPEED))}</div>
+      <div class="opt"><span>Camera</span>${seg('cam',[['0','Tilted'],['1','Top-down']],String(viewMode))}</div>
+      <div class="opt"><span>Saved run</span><button class="btn sm blood" type="button" id="oErase" ${loadSave()?'':'disabled'}>${loadSave()?'Erase saved run':'No saved run'}</button></div>
+    </div>${backBtn}`,true);
+  panel.querySelectorAll('[data-snd]').forEach(b=>b.onclick=()=>{setSound(b.dataset.snd==='1'); initAudio(); sfx('select'); showOptions();});
+  panel.querySelectorAll('[data-spd]').forEach(b=>b.onclick=()=>{setSpeed(+b.dataset.spd); sfx('select'); showOptions();});
+  panel.querySelectorAll('[data-cam]').forEach(b=>b.onclick=()=>{setViewMode(+b.dataset.cam); sfx('select'); showOptions();});
+  on('oErase',e=>{const b=e.target; if(!b.classList.contains('armed')){b.classList.add('armed'); b.textContent='Tap again to erase'; return;} clearSave(); sfx('slam'); showOptions(); renderTitleMenu();});
+  on('bBack',()=>{hideScreen(); if(titleMode) renderTitleMenu();});
+}
+// title life: the camera circles, the logo's eyes and every piece on the board follow your pointer
+let tPtr=null, tPtrUntil=0, tBlink=3, tLookAt=0;
+document.addEventListener('pointermove',e=>{
+  if(!titleMode) return; tPtr={x:e.clientX,y:e.clientY}; tPtrUntil=clock+3;
+  if(clock<tLookAt) return; tLookAt=clock+.08;
+  const r=canvas.getBoundingClientRect(); ndc.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1); ray.setFromCamera(ndc,camera);
+  const pt=V3(0,0,0); if(ray.ray.intersectPlane(groundPlane,pt)){pt.y=.6; for(const t of toysAll) t.lookAt(pt.clone(),1.2);}
+});
+frameHooks.push(dt=>{
+  if(!titleMode) return;
+  if(!ptrs.size&&!REDUCED){VIEW.yaw+=dt*.06; applyView();}
+  const tx=tPtr&&clock<tPtrUntil?tPtr.x:innerWidth*(.5+Math.sin(clock*.6)*.35), ty=tPtr&&clock<tPtrUntil?tPtr.y:innerHeight*(.55+Math.sin(clock*.9)*.25);
+  for(const e of document.querySelectorAll('.tEye')){const r=e.getBoundingClientRect(), dx=tx-(r.left+r.width/2), dy=ty-(r.top+r.height/2), d=Math.hypot(dx,dy)||1, m=Math.min(1,d/220)*r.width*.2;
+    e.firstChild.style.transform=`translate(${(dx/d*m).toFixed(1)}px,${(dy/d*m).toFixed(1)}px)`;}
+  if(clock>tBlink){tBlink=clock+2.2+Math.random()*4; const eyes=document.querySelectorAll('.tEye'); eyes.forEach(e=>e.classList.add('blink')); setTimeout(()=>eyes.forEach(e=>e.classList.remove('blink')),130);}
+});
 
 function previewArmy(drop){clearBoardToys(); return placeArmies(run.army,null,false,drop).then(b=>{RS=null; return b;});}
 function showBlinds(){
@@ -2954,12 +3114,13 @@ function showGameOver(kind){
   const mate=RS&&RS.mateOnly;
   const head=kind==='mate'?'Your King has fallen':kind==='stale'?'Stalemate':'Time is up';
   const why=kind==='mate'?'Black delivered checkmate.':kind==='stale'?(mate?'A draw is not enough in an Endgame.':'The game is drawn short of the points target.'):(mate?'You did not find checkmate within the move limit.':'Your moves ran out before you reached the points target.');
+  recordRun(false);
   showScreen(`<span class="eyebrow">${eventName(run.ante)}</span><h2>${head}</h2><p>${why}</p><h3>Your run</h3>${statsHtml()}
     <div class="row end"><button class="btn ghost sm" id="bMenu" type="button">Main menu</button><button class="btn" id="bAgain" type="button">New run</button></div>`);
-  on('bAgain',()=>{newRun(); showBlinds();}); on('bMenu',showTitle);
+  on('bAgain',()=>{newRun(); countRun(); showBlinds();}); on('bMenu',showTitle);
 }
 function showVictory(){
-  sfx('win'); burst(V3(0,1,0),['#ecd08a','#f2e8d0','#8c2b2d','#c9a24a'],80,7,.08,7,2,-9);
+  recordRun(true); sfx('win'); burst(V3(0,1,0),['#ecd08a','#f2e8d0','#8c2b2d','#c9a24a'],80,7,.08,7,2,-9);
   showScreen(`<p class="ornament">${['K','Q','K'].map(glw).join('')}</p><h1 class="logo"><small>Googly Gambit</small>World Champion</h1>
     <p class="sub">Eight events, eight titled opponents mated. The pieces will be talking about this for weeks.</p><h3>Your run</h3>${statsHtml()}
     <div class="row end"><button class="btn ghost sm" id="bMenu" type="button">Main menu</button><button class="btn blood" id="bEndless" type="button">Keep playing exhibitions</button></div>`);
@@ -2968,10 +3129,16 @@ function showVictory(){
 }
 
 // ---------- tools ----------
-$('bView').onclick=()=>{viewMode=1-viewMode; $('bView').textContent=viewMode?'Top':'Tilt'; VIEW.pitch=0; frameCamera();};
+const savePrefs=()=>saveJSON(PREFS_KEY,{sound:soundOn,speed:SPEED,view:viewMode});
+function setSound(on){soundOn=on; $('bSound').textContent=on?'Sound on':'Sound off'; savePrefs();}
+function setSpeed(n){SPEED=n; $('bSpeed').textContent=n+'×'; savePrefs();}
+function setViewMode(m){viewMode=m; $('bView').textContent=m?'Top':'Tilt'; if(!titleMode) VIEW.pitch=0; frameCamera(); savePrefs();}
+$('bView').onclick=()=>setViewMode(1-viewMode);
 $('bReset').onclick=()=>{resetView();};
-$('bSpeed').onclick=()=>{SPEED=SPEED===1?2:SPEED===2?3:1; $('bSpeed').textContent=SPEED+'×';};
-$('bSound').onclick=()=>{soundOn=!soundOn; initAudio(); $('bSound').textContent=soundOn?'Sound on':'Sound off';};
+$('bSpeed').onclick=()=>setSpeed(SPEED===1?2:SPEED===2?3:1);
+$('bSound').onclick=()=>{setSound(!soundOn); initAudio();};
+{const P=loadJSON(PREFS_KEY); if(P){soundOn=P.sound!==false; SPEED=[1,2,3].includes(P.speed)?P.speed:1; viewMode=P.view===1?1:0;
+  $('bSound').textContent=soundOn?'Sound on':'Sound off'; $('bSpeed').textContent=SPEED+'×'; $('bView').textContent=viewMode?'Top':'Tilt';}}
 document.addEventListener('keydown',e=>{if(e.key==='Escape') deselect();});
 
 showTitle();
