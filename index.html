@@ -790,8 +790,8 @@ const BASE=[[0,0],[.34,0],[.37,.04],[.37,.09],[.31,.13]];
 const GOLDM=toon('#f2c14e'), REDCROWN=toon('#ff4a5e'), DARK=toon('#241a2e');
 const FACE={P:{y:.66,z:.18,er:.076,gap:.084,h:.9},N:{y:.8,z:.24,er:.07,gap:.085,h:1.05},B:{y:.71,z:.17,er:.072,gap:.08,h:1.12},
             R:{y:.42,z:.25,er:.09,gap:.1,h:.92},Q:{y:.77,z:.2,er:.078,gap:.088,h:1.17},K:{y:.82,z:.22,er:.08,gap:.092,h:1.32},
-            J:{y:.69,z:.19,er:.075,gap:.083,h:1.15},F:{y:.57,z:.18,er:.07,gap:.08,h:1.1},A:{y:.72,z:.18,er:.075,gap:.082,h:1.0},
-            X:{y:.76,z:.215,er:.08,gap:.09,h:1.1},H:{y:.72,z:.18,er:.075,gap:.083,h:1.15}};
+            J:{y:.66,z:.2,er:.068,gap:.085,h:1.15},F:{y:.82,z:.1,er:.068,gap:.1,h:1.2},A:{y:.5,z:.27,er:.075,gap:.09,h:1.05},
+            X:{y:.68,z:.22,er:.078,gap:.088,h:1.12},H:{y:.47,z:.19,er:.072,gap:.082,h:1.1}};
 const ACCM={}, acc=c=>ACCM[c]||(ACCM[c]=toon(c));
 const STEEL=new THREE.MeshPhongMaterial({color:0xb8c0c8,specular:0xffffff,shininess:80,emissive:0x1a1e22});
 const FLASK=new THREE.MeshPhongMaterial({color:0x6aff8a,specular:0xffffff,shininess:120,emissive:0x1a7a3a,transparent:true,opacity:.85});
@@ -823,46 +823,43 @@ function buildModel(t){
       part(M,sph(.25),mat,[0,.82,0]);
       if(!t.noCrown){part(M,geo('kband',()=>new THREE.CylinderGeometry(.2,.18,.13,16,1,true)),crown,[0,1.02,0]);
       part(M,box(.065,.24,.065),crown,[0,1.19,0]); part(M,box(.18,.065,.065),crown,[0,1.22,0]);}
-      part(M,sph(.05),DARK,[-.055,.73,.225],[1.3,.55,.6],[0,0,.35],0); part(M,sph(.05),DARK,[.055,.73,.225],[1.3,.55,.6],[0,0,-.35],0);
+      if(!t.bossId||(BOSS_LOOK[t.bossId]&&BOSS_LOOK[t.bossId].stache)){part(M,sph(.05),DARK,[-.055,.73,.225],[1.3,.55,.6],[0,0,.35],0); part(M,sph(.05),DARK,[.055,.73,.225],[1.3,.55,.6],[0,0,-.35],0);}
       break;
-    case 'J':{ // jester: two-tone ruff, floppy two-horned cap with bells
-      const c1=acc(side==='w'?'#c0303a':'#5a1a2a'), c2=acc(side==='w'?'#2a5ac0':'#2a2a5a');
-      part(M,lathe('J',BASE.concat([[.21,.18],[.15,.32],[.14,.4],[.23,.44],[.23,.47],[.12,.5],[0,.52]])),mat);
-      part(M,sph(.21),mat,[0,.69,0]);
-      for(let i=0;i<10;i++){const a=i/10*Math.PI*2, m=part(M,cone(.055,.13),i%2?c1:c2,[Math.sin(a)*.21,.47,Math.cos(a)*.21],null,null,0); m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(Math.sin(a),-.35,Math.cos(a)).normalize());}
-      part(M,sph(.19),c1,[0,.93,0],[1,.48,1]);
-      for(const s2 of [-1,1]){part(M,cone(.085,.36),s2<0?c1:c2,[s2*.15,1.0,0],null,[0,0,-s2*.9]); part(M,sph(.045),GOLDM,[s2*.3,1.12,0],null,null,0);}
+    case 'J':{ // jester: slim turned stem, a ruff of points, a bell-shaped head and a three-pronged fool's crown
+      part(M,lathe('J2',BASE.concat([[.2,.18],[.13,.29],[.115,.35],[.15,.37],[.28,.4],[.29,.43],[.15,.45],[.12,.48],[.16,.53],[.22,.64],[.25,.74],[.25,.79],[.18,.82],[0,.83]])),mat);
+      for(let i=0;i<12;i++){const a=i/12*Math.PI*2, m=part(M,cone(.045,.11),mat,[Math.sin(a)*.3,.41,Math.cos(a)*.3],null,null,0); m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(Math.sin(a),-.35,Math.cos(a)).normalize());}
+      for(const sd of [-1,0,1]){let x=0,y=.83;
+        for(let k=1;k<=4;k++){const q=k/4; x=sd*.27*q; y=.83+(sd?.36*q-.1*q*q:.32*q); part(M,sph(.056-k*.007),mat,[x,y,0]);}
+        part(M,sph(.045),GOLDM,[x+sd*.02,y+.035,0],null,null,0);}
       break;}
-    case 'F': // footman: kettle helmet, spear and round shield
-      part(M,lathe('F',BASE.concat([[.24,.18],[.2,.32],[.2,.4],[.26,.43],[.26,.46],[.13,.49],[0,.5]])),mat);
-      part(M,sph(.2),mat,[0,.62,0]);
-      part(M,geo('helmF',()=>new THREE.SphereGeometry(.225,18,10,0,Math.PI*2,0,Math.PI/2)),STEEL,[0,.69,0]);
-      part(M,geo('brimF',()=>new THREE.CylinderGeometry(.31,.31,.025,20)),STEEL,[0,.69,0]);
-      part(M,geo('spearS',()=>new THREE.CylinderGeometry(.018,.018,1.0,6)),acc('#7a5030'),[.31,.55,0]); part(M,cone(.04,.14),STEEL,[.31,1.1,0],null,null,0);
-      part(M,geo('shF',()=>new THREE.CylinderGeometry(.16,.16,.04,18)),acc(side==='w'?'#2a5ac0':'#3a2a4a'),[-.29,.33,.06],null,[Math.PI/2,0,.2]); part(M,sph(.04),GOLDM,[-.3,.33,.1],null,null,0);
-      break;
-    case 'A': // alchemist: robe, wild hair, brass goggles, bubbling flask
-      part(M,lathe('A',[[0,0],[.36,0],[.38,.05],[.32,.1],[.26,.3],[.2,.45],[.24,.5],[.13,.54],[0,.55]]),mat);
-      part(M,sph(.2),mat,[0,.72,0]);
-      for(const s2 of [-1,1]){part(M,geo('gogT',()=>new THREE.TorusGeometry(.045,.014,8,16)),acc('#a07830'),[s2*.07,.87,.15],null,[-.4,0,0],0); part(M,sph(.04),LENS,[s2*.07,.87,.15],[1,1,.3],[-.4,0,0],0);
-        part(M,sph(.07),acc('#eceaf4'),[s2*.19,.78,-.06]); part(M,sph(.055),acc('#eceaf4'),[s2*.15,.88,-.1]);}
-      part(M,geo('gogS',()=>new THREE.TorusGeometry(.205,.012,6,24)),acc('#5a3a22'),[0,.85,0],null,[Math.PI/2+.25,0,0],0);
-      part(M,sph(.09),FLASK,[.28,.42,.08],null,null,0); part(M,geo('flN',()=>new THREE.CylinderGeometry(.025,.03,.09,8)),FLASK,[.28,.53,.08],null,null,0); part(M,sph(.025),acc('#a07040'),[.28,.58,.08],null,null,0);
-      break;
-    case 'X': // executioner: black pointed hood and a big axe
-      part(M,lathe('X',BASE.concat([[.27,.18],[.24,.36],[.27,.46],[.29,.5],[.15,.54],[0,.56]])),mat);
-      part(M,sph(.23),acc('#1e1418'),[0,.76,0]); part(M,cone(.13,.24),acc('#1e1418'),[0,1.0,-.06],null,[-.35,0,0]);
-      part(M,geo('axH',()=>new THREE.CylinderGeometry(.022,.026,.9,8)),acc('#5a3a22'),[.3,.6,-.05],null,[0,0,.35]);
-      part(M,geo('axB',()=>new THREE.CylinderGeometry(.17,.17,.03,16,1,false,0,Math.PI)),STEEL,[.16,.98,-.05],null,[Math.PI/2,0,.35]);
-      break;
-    case 'H': // herald: plumed beret, trumpet with a banner
-      part(M,lathe('H',BASE.concat([[.22,.18],[.16,.34],[.16,.42],[.24,.46],[.24,.49],[.13,.52],[0,.53]])),mat);
-      part(M,sph(.2),mat,[0,.72,0]);
-      part(M,sph(.2),acc(side==='w'?'#2a5ac0':'#3a2a4a'),[.04,.9,0],[1.15,.35,1.1],[0,0,-.2]); part(M,sph(.05),acc('#e8b030'),[-.12,1.05,-.05],[.6,3,.6],[0,0,.6]);
-      part(M,geo('trH',()=>new THREE.CylinderGeometry(.02,.02,.5,8)),GOLDM,[.25,.6,.12],null,[0,0,-1.0]);
-      part(M,geo('trB',()=>new THREE.CylinderGeometry(.09,.02,.14,14,1,true)),GOLDM,[.52,.77,.12],null,[0,0,-1.0]);
-      part(M,box(.16,.2,.012),acc('#b0222a'),[.36,.55,.12],null,null,0); part(M,box(.16,.025,.014),GOLDM,[.36,.65,.12],null,null,0);
-      break;
+    case 'F':{ // footman: a turned plinth carrying a heater shield, a spear standing behind it
+      part(M,lathe('F2',BASE.concat([[.23,.18],[.17,.27],[.16,.33],[.25,.37],[.25,.41],[.17,.44],[0,.45]])),mat);
+      part(M,geo('shieldF2',()=>{const sh=new THREE.Shape(); sh.moveTo(-.25,.3); sh.quadraticCurveTo(0,.36,.25,.3); sh.lineTo(.25,.02); sh.quadraticCurveTo(.24,-.2,0,-.33); sh.quadraticCurveTo(-.24,-.2,-.25,.02); sh.closePath();
+        const g=new THREE.ExtrudeGeometry(sh,{depth:.1,bevelEnabled:true,bevelSize:.025,bevelThickness:.025,bevelSegments:2}); g.translate(0,0,-.05); return g;}),mat,[0,.79,.02]);
+      part(M,sph(.035),mat,[0,.63,.105],[1,1,.5],null,0);
+      part(M,geo('spearF2',()=>new THREE.CylinderGeometry(.022,.022,.9,8)),mat,[.19,.76,-.1]);
+      part(M,box(.12,.028,.028),mat,[.19,1.2,-.1]); part(M,cone(.05,.18),STEEL,[.19,1.3,-.1]);
+      break;}
+    case 'A':{ // alchemist: a round-bottomed flask with a long neck and a glowing, bubbling stopper
+      part(M,lathe('A2',BASE.concat([[.2,.17],[.13,.22],[.12,.26],[.2,.28],[.27,.36],[.295,.47],[.28,.57],[.21,.65],[.11,.7],[.08,.73],[.075,.88],[.11,.91],[.11,.94],[.07,.95],[0,.95]])),mat);
+      part(M,torG(.085,.016),mat,[0,.8,0],null,[Math.PI/2,0,0],0);
+      part(M,sph(.07),FLASK,[0,1.0,0],[1,.8,1],null,0);
+      const bub=[0,1,2].map(()=>part(M,sph(.025),FLASK,[0,1.05,0],null,null,0));
+      (t.bossAnims=t.bossAnims||[]).push(()=>{bub.forEach((b,k)=>{const q=(clock*.6+k/3)%1; b.position.set(Math.sin(q*9+k)*.04,1.06+q*.35,0); b.scale.setScalar(Math.max(.01,1-q));});});
+      break;}
+    case 'X':{ // executioner: a pointed cowl on a turned stem, a great axe blade rising behind one shoulder
+      part(M,lathe('X2',BASE.concat([[.25,.18],[.19,.26],[.18,.31],[.27,.35],[.27,.39],[.2,.42],[.24,.5],[.255,.6],[.24,.72],[.19,.84],[.11,.95],[.035,1.02],[0,1.04]])),mat);
+      part(M,geo('axS2',()=>new THREE.CylinderGeometry(.024,.024,.8,8)),mat,[.25,.82,-.12]); part(M,sph(.04),mat,[.25,1.23,-.12]);
+      part(M,geo('axB2',()=>{const sh=new THREE.Shape(); sh.moveTo(0,.1); sh.quadraticCurveTo(.15,.12,.24,.21); sh.quadraticCurveTo(.33,0,.24,-.21); sh.quadraticCurveTo(.15,-.1,0,-.06); sh.closePath();
+        const g=new THREE.ExtrudeGeometry(sh,{depth:.035,bevelEnabled:true,bevelSize:.012,bevelThickness:.012,bevelSegments:1}); g.translate(0,0,-.0175); return g;}),mat,[.26,1.06,-.12]);
+      break;}
+    case 'H':{ // herald: a town crier's handbell with a turned handle and a pennant
+      part(M,lathe('H2',[[0,0],[.36,0],[.38,.04],[.38,.08],[.34,.1],[.35,.13],[.31,.16],[.26,.24],[.225,.38],[.205,.52],[.2,.62],[.17,.7],[.1,.75],[.055,.77],[.05,.86],[.075,.89],[.075,.92],[.05,.94],[.05,.98],[.09,1.02],[.08,1.07],[0,1.09]]),mat);
+      part(M,geo('hRod',()=>new THREE.CylinderGeometry(.012,.012,.26,6)),GOLDM,[.13,.96,0],null,[0,0,Math.PI/2],0);
+      const fl=new THREE.Group(); fl.position.set(.2,.96,0); M.add(fl);
+      part(fl,geo('hFlag',()=>{const sh=new THREE.Shape(); sh.moveTo(-.08,0); sh.lineTo(.08,0); sh.lineTo(0,-.22); sh.closePath(); const g=new THREE.ExtrudeGeometry(sh,{depth:.012,bevelEnabled:false}); g.translate(0,0,-.006); return g;}),acc(side==='w'?'#b0222a':'#5a1a2a'),null,null,null,0);
+      (t.bossAnims=t.bossAnims||[]).push(()=>{fl.rotation.x=Math.sin(clock*2.6+t.phase)*.18;});
+      break;}
   }
 }
 
@@ -903,7 +900,7 @@ const BOSS_LOOK={
     part(mr,BMG('mh',()=>new THREE.CylinderGeometry(.022,.026,.24,8)),GOLDM,[0,-.18,0]); part(mr,BMG('mf',()=>new THREE.TorusGeometry(.1,.02,8,24)),GOLDM,[0,0,0]);
     part(mr,BMG('mg',()=>new THREE.CylinderGeometry(.095,.095,.01,24)),phong(0xe8f6ff,220,0x3a4a5a),null,null,[Math.PI/2,0,0],0);
     an.push(()=>{mr.rotation.y=Math.sin(clock*1.2)*.8;});}},
-  tyrant:{mat:toon('#3e1d52'),noCrown:true,build(t){const M=t.model;
+  tyrant:{stache:true,mat:toon('#3e1d52'),noCrown:true,build(t){const M=t.model;
     part(M,BMG('tband',()=>new THREE.CylinderGeometry(.22,.2,.16,18,1,true)),GOLDM,[0,1.02,0]);
     for(let i=0;i<8;i++){const a=i/8*Math.PI*2; part(M,cone(.04,.3),GOLDM,[Math.sin(a)*.2,1.24,Math.cos(a)*.2],null,null,0); part(M,sph(.028),acc(i%2?'#d82a3a':'#2a6ae8'),[Math.sin(a)*.215,1.0,Math.cos(a)*.215],null,null,0);}
     part(M,BMG('cape',()=>new THREE.CylinderGeometry(.3,.44,.72,18,1,true,Math.PI/2,Math.PI)),new THREE.MeshToonMaterial({color:'#8c1a2a',gradientMap:gradTex,side:THREE.DoubleSide}),[0,.38,-.02]);
@@ -912,7 +909,7 @@ const BOSS_LOOK={
     part(M,BMG('helm',()=>new THREE.SphereGeometry(.28,18,10,0,Math.PI*2,0,Math.PI/2)),ol,[0,.92,0]); part(M,BMG('hbrim',()=>new THREE.CylinderGeometry(.34,.34,.025,20)),ol,[0,.92,0]);
     for(let i=0;i<6;i++){const a=i/6*Math.PI*2+.3; part(M,box(.06,.012,.06),acc('#3a4220'),[Math.sin(a)*.2,1.12,Math.cos(a)*.2],null,[0,a,.5],0);}
     for(let i=0;i<9;i++){const a=i/9*Math.PI*2; part(M,sph(.1),acc('#c8b07a'),[Math.sin(a)*.42,.05,Math.cos(a)*.42],[1.1,.45,.7],[0,a+Math.PI/2,0]);}}},
-  gambit:{mat:toon('#235a3c'),noCrown:true,build(t){const M=t.model, an=t.bossAnims=[], blk=acc('#151214');
+  gambit:{stache:true,mat:toon('#235a3c'),noCrown:true,build(t){const M=t.model, an=t.bossAnims=[], blk=acc('#151214');
     part(M,BMG('thb',()=>new THREE.CylinderGeometry(.27,.27,.02,22)),blk,[0,1.02,0]); part(M,BMG('tht',()=>new THREE.CylinderGeometry(.16,.17,.28,20)),blk,[0,1.17,0]);
     part(M,BMG('thr',()=>new THREE.CylinderGeometry(.172,.172,.05,20)),acc('#b0222a'),[0,1.07,0],null,null,0);
     part(M,BMG('mono',()=>new THREE.TorusGeometry(.065,.01,6,20)),GOLDM,[.092,.82,.275],null,null,0);
@@ -981,7 +978,7 @@ const BOSS_LOOK={
       part(g,BMG('snk',()=>new THREE.CylinderGeometry(.025,.035,.2,8)),sk,[0,.1,0]); const hd=part(g,sph(.04),sk,[0,.22,.02],[1,.8,1.3]); part(hd,sph(.012),GLOWRED,[.022,.01,.025],null,null,0); part(hd,sph(.012),GLOWRED,[-.022,.01,.025],null,null,0); snakes.push(g);}
     part(M,BMG('gcl',()=>new THREE.TorusGeometry(.2,.03,8,24)),GOLDM,[0,.58,0],null,[Math.PI/2,0,0],0);
     an.push(()=>{snakes.forEach((g,k)=>{g.children[1].position.x=Math.sin(clock*4+k)*.03; g.rotation.y=Math.sin(clock*2+k)*.25;}); if(!t.lockStare) t.laser=Math.sin(clock*1.3)>.92;});}},
-  duelist:{mat:toon('#2c3c74'),noCrown:true,build(t){const M=t.model, an=t.bossAnims=[], hat=acc('#1e1a26');
+  duelist:{stache:true,mat:toon('#2c3c74'),noCrown:true,build(t){const M=t.model, an=t.bossAnims=[], hat=acc('#1e1a26');
     part(M,BMG('dbrim',()=>new THREE.CylinderGeometry(.38,.38,.025,24)),hat,[0,1.03,0],null,[0,0,.12]); part(M,BMG('dhat',()=>new THREE.CylinderGeometry(.17,.2,.16,18)),hat,[0,1.12,0],null,[0,0,.12]);
     part(M,sph(.06),acc('#f6f0e6'),[-.14,1.2,-.04],[.6,3.2,.5],[0,0,.9]);
     for(let i=0;i<6;i++) part(M,sph(.05),acc('#f6f0e6'),[Math.sin(i)*.04,.55-i*.03,.24],[1.5,.6,.5],null,0);
@@ -995,7 +992,7 @@ const BOSS_LOOK={
     for(const s of [-1,1]){part(M,sph(.15),ir,[s*.3,.58,0],[1,.8,1]); for(let k=0;k<3;k++){const m=part(M,cone(.03,.12),STEEL,[s*(.36+k*.02),.66-k*.05,(k-1)*.08],null,null,0); m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(s,.7,(k-1)*.3).normalize());}}
     part(M,BMG('jgb',()=>new THREE.TorusGeometry(.27,.035,8,24)),ir,[0,.2,0],null,[Math.PI/2,0,0],0);
     an.push(dt=>{if(Math.random()<dt*1.5){const p=t.root.position.clone(); p.y+=t.h*1.3; burst(p,['#d0d0d0','#a0a0a0'],1,.15,.06,.8,1,0,t.scn,-99);}});}},
-  blacksmith:{mat:toon('#7a4a2e'),noCrown:true,build(t){const M=t.model, an=t.bossAnims=[], ir=phong(0x3a3c42,60,0x0a0a0c);
+  blacksmith:{stache:true,mat:toon('#7a4a2e'),noCrown:true,build(t){const M=t.model, an=t.bossAnims=[], ir=phong(0x3a3c42,60,0x0a0a0c);
     part(M,BMG('bsband',()=>new THREE.TorusGeometry(.245,.035,8,24)),acc('#b0222a'),[0,.97,0],null,[Math.PI/2,0,0]); part(M,box(.05,.14,.02),acc('#b0222a'),[-.12,.9,-.22],null,[0,0,.4],0);
     part(M,box(.34,.4,.02),acc('#5a3a20'),[0,.32,.25],null,[-.1,0,0]); part(M,box(.4,.03,.03),acc('#3a2410'),[0,.5,.24],null,null,0);
     for(const p of [[.1,.74,.22],[-.08,.88,.21]]) part(M,sph(.03),acc('#2a2420'),p,[1.4,.8,.4],null,0);
@@ -1073,8 +1070,8 @@ const ED_TRIM={
 };
 const ED_GEM=new THREE.MeshPhongMaterial({color:0xe0203a,specular:0xffffff,shininess:160,emissive:0x5a0010});
 function updateEditions(){TEX.pearl.offset.x=(clock*.03)%1; TEX.pearl.offset.y=Math.sin(clock*.4)*.08; ED_MAT.poly.emissiveIntensity=.42+Math.sin(clock*1.7)*.14;}
-const COLLAR={P:[.435,.255],N:[.41,.225],B:[.435,.25],R:[.62,.34],Q:[.515,.26],K:[.535,.28],J:[.455,.235],F:[.445,.265],A:[.5,.23],X:[.48,.29],H:[.475,.245]};
-const BASER={P:.375,N:.375,B:.375,R:.415,Q:.375,K:.375,J:.375,F:.375,A:.385,X:.375,H:.375};
+const COLLAR={P:[.435,.255],N:[.41,.225],B:[.435,.25],R:[.62,.34],Q:[.515,.26],K:[.535,.28],J:[.465,.13],F:[.39,.255],A:[.66,.2],X:[.37,.275],H:[.72,.15]};
+const BASER={P:.375,N:.375,B:.375,R:.415,Q:.375,K:.375,J:.375,F:.375,A:.375,X:.375,H:.385};
 const torG=(r,t)=>geo('T'+r+'_'+t,()=>new THREE.TorusGeometry(r,t,8,32));
 function addInlay(t){
   const e=t.ed; if(!e) return; const M=t.model, [cy,cr]=COLLAR[t.type], br=BASER[t.type], flat=[Math.PI/2,0,0];
