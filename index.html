@@ -102,6 +102,7 @@ button{font:inherit;color:inherit}
 .relic{cursor:pointer}
 .relic.empty{background:transparent;box-shadow:inset 0 0 0 1px #c9a24a44;cursor:default}
 .relic.bump{animation:bump .34s ease}
+.relic.tarnished{filter:grayscale(.6) sepia(.5) hue-rotate(110deg) brightness(.75);box-shadow:0 0 0 2px #62b5a8,0 0 0 3px #1e4a44,inset 0 2px 6px #000a}
 @keyframes bump{40%{transform:translateY(-8px) scale(1.15)}}
 .purse{text-align:right;flex:0 0 auto}
 .purse small{display:block;font-family:var(--f-display);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass)}
@@ -274,6 +275,9 @@ body.titlemode #stage{position:fixed;inset:0;z-index:30;border:0;border-radius:0
 body.titlemode #stage .tools,body.titlemode #nameplate{visibility:hidden}
 .title{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;justify-content:space-between;align-items:center;gap:12px;padding:max(18px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(14px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));pointer-events:none;transition:opacity .35s}
 .title.leaving{opacity:0}
+.tLogo{transform-origin:50% 0;transition:scale .4s cubic-bezier(.2,1.2,.4,1)}
+.title.picking .tLogo{scale:.55}
+@media (max-width:640px){.title.picking .tLogo{scale:.62}}
 .tLogo{margin:0;display:flex;flex-direction:column;align-items:center;line-height:.92;filter:drop-shadow(0 5px 0 #000a) drop-shadow(0 16px 26px #000c);animation:logoIn .9s cubic-bezier(.2,1.5,.4,1) both;pointer-events:auto}
 @keyframes logoIn{from{transform:translateY(-50px) scale(.75);opacity:0}}
 .tW1,.tW2{display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:700}
@@ -321,16 +325,30 @@ body.titlemode #stage .tools,body.titlemode #nameplate{visibility:hidden}
 .pTxt b{font-family:var(--f-display);font-size:20px;letter-spacing:.05em;line-height:1.15}
 .pTxt p{margin:0;font-size:16px;line-height:1.35}
 .pTxt small{font-size:14.5px;font-style:italic;color:var(--ink2);line-height:1.3}
-.pCard.locked .pSw{filter:grayscale(.8) brightness(.55)}
-.pCard.locked .pSw::after{content:"?";position:absolute;inset:0;display:grid;place-items:center;font:700 34px var(--f-display);color:var(--brass-hi);text-shadow:0 2px 0 #000}
+.lk{position:absolute;right:-6px;bottom:-5px;width:15px;height:12px;border-radius:2px;background:linear-gradient(180deg,#ecd08a,#a8842f);box-shadow:0 0 0 1.5px #2a1d0e,0 2px 3px #0008;pointer-events:none}
+.lk::before{content:"";position:absolute;left:2.5px;top:-7px;width:6px;height:7px;border:2px solid #c9a24a;border-bottom:0;border-radius:5px 5px 0 0;box-shadow:0 0 0 1px #2a1d0e}
+.lk::after{content:"";position:absolute;left:6px;top:3.5px;width:3px;height:4px;border-radius:1px;background:#2a1d0e}
+.pSw .lk{right:-8px;bottom:-8px;transform:scale(1.5);transform-origin:100% 100%}
 .pPips{display:flex;gap:9px;flex-wrap:wrap;justify-content:center}
 .pPip{width:26px;height:26px;border:0;padding:0;border-radius:2px;cursor:pointer;background:conic-gradient(var(--l) 25%,var(--d) 0 50%,var(--l) 0 75%,var(--d) 0) 0 0/50% 50%;box-shadow:0 0 0 2px var(--f),0 2px 5px #0009;transition:transform .12s}
 .pPip.on{transform:translateY(-4px) scale(1.12);box-shadow:0 0 0 2px var(--f),0 0 0 4px var(--brass-hi),0 4px 8px #000a}
-.pPip.locked{filter:grayscale(1) brightness(.4)}
+.pPip{position:relative}
+/* coats: lacquer chips under the boards */
+.cRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+.cLbl{font-family:var(--f-display);font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--brass-hi);text-shadow:0 1px 0 #000}
+.cChips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.cChip{position:relative;display:inline-block;width:26px;height:26px;border:0;padding:0;border-radius:50%;cursor:pointer;background:radial-gradient(circle at 36% 30%,#fff9 0 12%,transparent 34%),var(--c);box-shadow:0 0 0 2px #2a1d0e,0 0 0 3px #ecd08a88,0 3px 6px #000a;transition:transform .12s}
+.cChip.on{transform:translateY(-4px) scale(1.15);box-shadow:0 0 0 2px #2a1d0e,0 0 0 4px var(--brass-hi),0 5px 9px #000b}
+.cChip:focus-visible{outline:3px solid var(--brass-hi);outline-offset:3px}
+.cChip.big{width:48px;height:48px;flex:0 0 auto;cursor:default}
+.cInfo{width:100%;display:flex;gap:10px;align-items:center;background:#f2e8d0f0;color:var(--ink);border-radius:3px;padding:7px 12px;font-size:15px;line-height:1.35;box-shadow:0 0 0 1px var(--brass-d),0 8px 18px #0009}
+.cInfo b{font-family:var(--f-display);font-size:12px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.cInfo i{color:var(--ink2)}
+.cInfo .cChip{flex:0 0 auto;width:22px;height:22px;cursor:default}
 .pActs{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;align-items:flex-end}
 .tBtn[disabled]{cursor:not-allowed;filter:grayscale(.7) brightness(.75)}
 .tBtn[disabled]:hover,.tBtn[disabled]:active{transform:none}
-@media (max-width:640px){.pArrow{width:38px;height:56px;font-size:28px}.pCard{gap:12px;padding:10px 12px}.pSw{width:52px;height:52px}.pTxt b{font-size:17px}.pTxt p{font-size:15px}.pActs .tBtn{flex:1 1 40%}}
+@media (max-width:640px){.pArrow{width:38px;height:56px;font-size:28px}.pCard{gap:12px;padding:10px 12px;min-height:0}.pSw{width:52px;height:52px}.pTxt b{font-size:17px}.pTxt p{font-size:15px}.pActs .tBtn,.pActs .tBtn.play{flex:1 1 40%}.tPick{gap:9px}.cChip{width:22px;height:22px}.cChips{gap:6px}.cInfo{font-size:14px;padding:6px 10px}}
 /* a board unlocked mid-run: a brass-edged card drops in at the top */
 .unlockNote{position:fixed;top:max(14px,env(safe-area-inset-top,0px));left:50%;z-index:70;display:flex;gap:14px;align-items:center;width:min(430px,calc(100% - 32px));transform:translateX(-50%);background:var(--paper);color:var(--ink);border-radius:4px;padding:12px 16px 12px 14px;box-shadow:0 0 0 1px var(--ink2),0 0 0 4px var(--paper),0 0 0 5px var(--brass-d),0 16px 36px #000c;pointer-events:none;animation:noteIn .5s cubic-bezier(.2,1.4,.4,1);transition:opacity .35s,transform .35s}
 .unlockNote.out{opacity:0;transform:translate(-50%,-24px)}
@@ -412,7 +430,7 @@ const TCH=['','P','N','B','R','Q','K','J','F','A','X','H'];
 const TID={P:1,N:2,B:3,R:4,Q:5,K:6,J:7,F:8,A:9,X:10,H:11};
 // Ability state the game layer syncs before each search:
 // SHIELD = squares of Footmen holding the line; TRANS = squares of Pawns that may step sideways.
-const SHIELD=[], TRANS=[], RULES={kpawn:false,bigking:false,ronin:false};
+const SHIELD=[], TRANS=[], RULES={kpawn:false,bigking:false,ronin:false,nodouble:false};
 const shielded=(b,t)=>{for(const fs of SHIELD) if(b[fs]===FO&&fs-8===t) return true; return false;};
 const KN=[[1,2],[2,1],[2,-1],[1,-2],[-1,-2],[-2,-1],[-2,1],[-1,2]];
 const KG=[[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
@@ -432,7 +450,7 @@ function pseudoMoves(b,side,out){
       if(inB(r1,c)&&!b[rc(r1,c)]){
         out.push({f:s,t:rc(r1,c),p:r1===last?Q:0});
         const r2=r+2*side;
-        if(r===start&&inB(r2,c)&&!b[rc(r2,c)]) out.push({f:s,t:rc(r2,c),p:0});
+        if(r===start&&inB(r2,c)&&!b[rc(r2,c)]&&!(side===1&&RULES.nodouble)) out.push({f:s,t:rc(r2,c),p:0});
       }
       for(let dc=-1;dc<=1;dc+=2){const cc=c+dc; if(inB(r1,cc)){const tv=b[rc(r1,cc)]; if(tv&&(tv>0?1:-1)===-side) out.push({f:s,t:rc(r1,cc),p:r1===last?Q:0});}}
       if(side===1&&TRANS.length&&TRANS.includes(s)) for(let dc=-1;dc<=1;dc+=2){const cc=c+dc; if(inB(r,cc)&&!b[rc(r,cc)]) out.push({f:s,t:rc(r,cc),p:0});}
@@ -719,7 +737,7 @@ const EVENTS=['Village Hall Open','Coffeehouse Circuit','County Championship','N
 const eventName=a=>a<=8?EVENTS[a-1]:`Exhibition Tour ${a-8}`;
 const ANTE_BASE=[120,220,380,600,950,1450,2200,3300];
 function anteBase(a){return a<=8?ANTE_BASE[a-1]:Math.round(3300*Math.pow(1.7,a-8));}
-function blindTarget(a,bi){return bi===2?0:Math.round(anteBase(a)*BLIND[bi].mul/10)*10;}
+function blindTarget(a,bi){return bi===2?0:Math.round(anteBase(a)*BLIND[bi].mul*(coatLv()>=3?1.25:1)/10)*10;}
 function rating(a,bi,boss){return 800+(Math.min(a,12)-1)*190+bi*50+(boss==='tyrant'?150:0);}
 const BASE_MOVES=14, BOSS_MOVES=28;
 
@@ -800,7 +818,7 @@ const CHARTERS=[
 ];
 const CHARTER_BY=Object.fromEntries(CHARTERS.map(c=>[c.id,c])), CHARTER_COST=10;
 const hasCharter=id=>!!run&&(run.charters||[]).includes(id);
-const price=c=>Math.max(1,Math.floor(c*(hasCharter('disc2')?.5:hasCharter('disc1')?.75:1)));
+const price=c=>Math.max(1,Math.floor(c*(hasCharter('disc2')?.5:hasCharter('disc1')?.75:1)))+(coatLv()>=5?1:0);
 const relicMax=()=>5+(hasCharter('cabinet')?1:0)+(onBoard('ebony')?1:0);
 const interestCap=()=>hasCharter('bank2')?20:hasCharter('bank1')?10:5;
 const baseMult=t=>MULT[t]+(hasCharter('coach1')?2:0)+(hasCharter('coach2')?3:0);
@@ -820,13 +838,32 @@ const BOARDS=[
 ];
 const BOARD_BY=Object.fromEntries(BOARDS.map(b=>[b.id,b])), BOARDS_KEY='googly-gambit-boards-v1';
 const boardId=()=>(run&&run.board&&BOARD_BY[run.board])?run.board:'club', onBoard=id=>!!run&&boardId()===id;
-function boardStore(){const st=Object.assign({unlocked:['club'],best:{},champ:{}},loadJSON(BOARDS_KEY)||{}); if(!st.unlocked.includes('club')) st.unlocked.unshift('club'); return st;}
+function boardStore(){const st=Object.assign({unlocked:['club'],best:{},champ:{},coat:0,coatChamp:{}},loadJSON(BOARDS_KEY)||{}); if(!st.unlocked.includes('club')) st.unlocked.unshift('club'); return st;}
 const isUnlocked=id=>boardStore().unlocked.includes(id);
-function unlockBoard(id){const st=boardStore(); if(st.unlocked.includes(id)) return; st.unlocked.push(id); saveJSON(BOARDS_KEY,st); showUnlock(BOARD_BY[id]);}
+function unlockBoard(id){const st=boardStore(); if(st.unlocked.includes(id)) return; st.unlocked.push(id); saveJSON(BOARDS_KEY,st); const b=BOARD_BY[id]; showUnlock({label:'New board unlocked',name:b.name,effect:b.effect,sw:`<span class="pSw" style="${swStyle(b)}"></span>`});}
 function boardEventCleared(ante){
-  const st=boardStore(), b=boardId(); st.best[b]=Math.max(st.best[b]||0,ante); saveJSON(BOARDS_KEY,st);
+  const st=boardStore(), b=boardId(), k=coatIdx(); st.best[b]=Math.max(st.best[b]||0,ante);
+  if(ante>=8) st.coatChamp[b]=Math.max(st.coatChamp[b]==null?-1:st.coatChamp[b],k); saveJSON(BOARDS_KEY,st);
   if(b==='club') unlockBoard('freestyle'); if(b==='tournament'&&ante>=2) unlockBoard('gilded');
+  if(COATS[k+1]&&ante>=COATS[k+1].need) unlockCoat(k+1);
 }
+// Coats: the lacquer on your pieces and the run's difficulty. Each coat adds one restriction and keeps every earlier one.
+const COATS=[
+ {name:'Ivory',color:'#f3e9d6',rule:'The standard game.'},
+ {name:'Rose',color:'#e9a1a1',rule:'The Opening pays no prize money.',need:2},
+ {name:'Celadon',color:'#a9d3b1',rule:'Points targets are 25% higher.',need:3},
+ {name:'Cornflower',color:'#9fb9ea',rule:"Your Pawns can't advance two squares on their first move.",need:4},
+ {name:'Saffron',color:'#f2c75c',rule:'Everything in the Curio Shoppe costs £1 more.',need:5},
+ {name:'Coral',color:'#f2906c',rule:'Every game has 2 fewer moves.',need:6},
+ {name:'Wisteria',color:'#c6a8ea',rule:'Black makes the first move in every game.',need:7},
+ {name:'Verdigris',color:'#62b5a8',rule:'Each game, one of your curios is tarnished and has no effect.',need:8},
+ {name:'Vermilion',color:'#e2553f',rule:'Black makes far fewer mistakes.',need:8},
+ {name:'Lapis',color:'#5577dd',rule:'Endgames have 6 fewer moves.',need:8},
+];
+COATS.forEach((c,i)=>{if(i) c.unlock=c.need<8?`Beat Event ${['','I','II','III','IV','V','VI','VII'][c.need]} on the ${COATS[i-1].name} coat.`:`Become World Champion on the ${COATS[i-1].name} coat.`;});
+const coatIdx=()=>run&&run.coat>0&&run.coat<COATS.length?run.coat:0, coatLv=()=>coatIdx()+1;
+const coatUnlocked=i=>i<=boardStore().coat;
+function unlockCoat(i){const st=boardStore(); if(i<=st.coat||i>=COATS.length) return; st.coat=i; saveJSON(BOARDS_KEY,st); const c=COATS[i]; showUnlock({label:'New coat unlocked',name:`${c.name} coat`,effect:c.rule,sw:`<span class="cChip big" style="--c:${c.color}"></span>`});}
 function checkArmyUnlocks(){if(!run) return; if(run.relics.length>=5) unlockBoard('ebony'); if(run.army.filter(d=>d&&d.ann).length>=3) unlockBoard('scholar');}
 // Annotations: chess annotation symbols your pieces can wear as a brass medal
 const ANNOT={
@@ -892,7 +929,7 @@ const camera=new THREE.PerspectiveCamera(36,1,.1,200);
 const camBase=new THREE.Vector3(), camLook=new THREE.Vector3(0,.25,.35);
 
 // lamplit backdrop: warm pool of light fading into a dark wood-panelled room
-let titleMode=false; const TITLE_HIDE=[];
+let titleMode=false, titlePick=false; const TITLE_HIDE=[];
 const bgScene=new THREE.Scene(), bgCam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
 const bgU={uTime:{value:0},uAsp:{value:1},uTitle:{value:0},uA:{value:new THREE.Color('#0d0806')},uB:{value:new THREE.Color('#3a2416')},uC:{value:new THREE.Color('#8a5a2a')}};
 const bgGoal={A:new THREE.Color('#0d0806'),B:new THREE.Color('#3a2416'),C:new THREE.Color('#8a5a2a')};
@@ -1301,12 +1338,13 @@ const ED_TRIM={
   poly:new THREE.MeshBasicMaterial({color:0x17110e}),
 };
 const ED_GEM=new THREE.MeshPhongMaterial({color:0xe0203a,specular:0xffffff,shininess:160,emissive:0x5a0010});
-function updateEditions(){TEX.pearl.offset.x=(clock*.03)%1; TEX.pearl.offset.y=Math.sin(clock*.4)*.08; ED_MAT.poly.emissiveIntensity=.42+Math.sin(clock*1.7)*.14;}
+function updateEditions(){TEX.pearl.offset.x=(clock*.03)%1; TEX.pearl.offset.y=Math.sin(clock*.4)*.08; ED_MAT.poly.emissiveIntensity=.42+Math.sin(clock*1.7)*.14; for(const m of POLY_COATS) m.emissiveIntensity=ED_MAT.poly.emissiveIntensity;}
 const COLLAR={P:[.435,.255],N:[.41,.225],B:[.435,.25],R:[.62,.34],Q:[.515,.26],K:[.535,.28],J:[.465,.13],F:[.39,.255],A:[.66,.2],X:[.37,.275],H:[.72,.15]};
 const BASER={P:.375,N:.375,B:.375,R:.415,Q:.375,K:.375,J:.375,F:.375,A:.375,X:.375,H:.385};
 const torG=(r,t)=>geo('T'+r+'_'+t,()=>new THREE.TorusGeometry(r,t,8,32));
 function addInlay(t){
   const e=t.ed; if(!e) return; const M=t.model, [cy,cr]=COLLAR[t.type], br=BASER[t.type], flat=[Math.PI/2,0,0];
+  part(M,geo('coatFoot'+br,()=>new THREE.CylinderGeometry(br+.012,br+.016,.05,32,1,true)),MAT_W,[0,.03,0],null,null,0); // the coat stays visible under any inlay
   if(e==='foil'){ // engraved silver with polished bands and studs
     part(M,torG(br,.03),ED_TRIM.foil,[0,.065,0],null,flat,0); part(M,torG(cr+.01,.028),ED_TRIM.foil,[0,cy,0],null,flat,0);
     for(let i=0;i<8;i++){const a=i/8*Math.PI*2; part(M,sph(.028),ED_TRIM.foil,[Math.sin(a)*br*.84,.125,Math.cos(a)*br*.84],null,null,0);} }
@@ -1337,6 +1375,16 @@ function addAnnotation(t){
 }
 function glint(t,cols){const s=t.root.scale.x, p=t.root.position.clone(); p.x+=(Math.random()-.5)*.5*s; p.z+=(Math.random()-.5)*.5*s; p.y+=(.15+Math.random()*.8)*t.h*s; burst(p,cols,1,.15,.035*s,.3,.55,0,t.scn,-99);}
 const MAT_W=toon('#f3e9d6'), MAT_B=toon('#3d2e4d');
+let coatShown=0;
+function applyCoat(i){i=i>0&&i<COATS.length?i:0; coatShown=i; MAT_W.color.set(COATS[i].color);}
+// inlays keep the coat: each inlay material is tinted toward the coat colour (Ivory leaves them as they are)
+const COAT_ED={}, POLY_COATS=[];
+function edMat(ed){
+  const k=coatShown; if(!k||!ED_MAT[ed]) return ED_MAT[ed]; const key=ed+k; if(COAT_ED[key]) return COAT_ED[key];
+  const m=ED_MAT[ed].clone(), c=new THREE.Color(COATS[k].color); m.color.lerp(c,{foil:.55,holo:.5,poly:.6,gold:.58}[ed]);
+  if(ed==='poly'){m.emissive.lerp(c,.55); POLY_COATS.push(m);} else if(m.emissive) m.emissive.lerp(c.clone().multiplyScalar(.18),.6);
+  return COAT_ED[key]=m;
+}
 let toysAll=[];
 
 class Toy{
@@ -1347,7 +1395,7 @@ class Toy{
     this.root.add(this.squash); this.squash.add(this.yawG); this.yawG.add(this.pivot); this.pivot.add(this.model);
     this.pivot.position.y=F.h*.45; this.model.position.y=-F.h*.45; if(boss) this.squash.scale.setScalar(1.25);
     this.scn=(opt&&opt.scene)||scene; this.list=(opt&&opt.list)||toysAll; this.cam=(opt&&opt.cam)||null;
-    this.mat=this.ed?ED_MAT[this.ed]:side==='w'?MAT_W:MAT_B;
+    this.mat=this.ed?edMat(this.ed):side==='w'?MAT_W:MAT_B;
     this.bossId=def.boss||null; if(this.bossId&&BOSS_LOOK[this.bossId]){const L=BOSS_LOOK[this.bossId]; this.mat=L.mat; this.noCrown=!!L.noCrown;}
     buildModel(this); addInlay(this); if(side==='w'&&def.ann) addAnnotation(this); if(this.bossId&&BOSS_LOOK[this.bossId]) BOSS_LOOK[this.bossId].build(this); this.buildFace(F);
     this.root.traverse(o=>{o.userData.toy=this;});
@@ -1637,7 +1685,7 @@ function frameCamera(){
   const elev=viewMode===1?1.42:(asp<.8?1.08:.98), vf=camera.fov*Math.PI/180, hf=2*Math.atan(Math.tan(vf/2)*asp);
   const dW=4.8/Math.tan(hf/2), dH=(4.75*Math.sin(elev)+1.3*Math.cos(elev))/Math.tan(vf/2);
   fitD=Math.max(dW,dH)+.3; fitElev=elev;
-  if(titleMode) camera.setViewOffset(w,h,0,-h*(asp<.8?.02:.07),w,h); else camera.clearViewOffset();
+  if(titleMode) camera.setViewOffset(w,h,0,titlePick?h*(asp<.8?.2:.11):-h*(asp<.8?.02:.07),w,h); else camera.clearViewOffset();
   applyView();
 }
 function rotateView(dx,dy){VIEW.yaw-=dx*.008; VIEW.pitch+=dy*.005; applyView();}
@@ -1764,18 +1812,19 @@ const SAVE_KEY='googly-gambit-run-v2';
 let run=null, RS=null, toys=new Array(64).fill(null), busy=true, animating=false;
 const fmt=n=>n>=1e6?(n/1e6).toFixed(2)+'M':Math.round(n).toLocaleString('en-US');
 const fmtM=m=>String(Math.round(m*10)/10);
-const hasRelic=id=>!!run&&run.relics.some(r=>r.id===id);
+const hasRelic=id=>!!run&&run.relics.some((r,i)=>r.id===id&&!(RS&&RS.tarnish===i)); // a tarnished curio does nothing this game
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(run));}catch(e){}}
 function loadSave(){try{const s=localStorage.getItem(SAVE_KEY); return s?JSON.parse(s):null;}catch(e){return null;}}
 function clearSave(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
 function pickBosses(){const used=new Set(), out=[]; for(let a=1;a<=8;a++){const fin=a===8&&FINAL_BOSSES.length, pool=fin?FINAL_BOSSES:BOSSES.filter(b=>!used.has(b.id)&&(b.min||1)<=a), b=rnd(pool.length?pool:BOSSES); used.add(b.id); out.push(b.id);} return out;}
 function bossFor(a){if(!run.bosses[a-1]||!BOSS_BY[run.bosses[a-1]]) run.bosses[a-1]=rnd(BOSSES).id; return run.bosses[a-1];}
-function newRun(board){board=BOARD_BY[board]?board:'club'; run={board,ante:1,blind:0,money:board==='gilded'?15:4,army:startArmy(board),relics:[],bosses:pickBosses(),stats:{best:0,bestLabel:'',caps:0,rounds:0,mates:0},endless:false,shop:null,phase:'blind',pending:null,charters:[],charterOffer:null};}
+function newRun(board,coat){board=BOARD_BY[board]?board:'club'; coat=coat>0&&coat<COATS.length?coat:0; run={board,coat,ante:1,blind:0,money:board==='gilded'?15:4,army:startArmy(board),relics:[],bosses:pickBosses(),stats:{best:0,bestLabel:'',caps:0,rounds:0,mates:0},endless:false,shop:null,phase:'blind',pending:null,charters:[],charterOffer:null};}
 const slotSq=(i,side)=>side==='w'?(i<8?rc(0,i):rc(1,i-8)):(i<8?rc(7,i):rc(6,i-8));
 function movesFor(bi,boss){
   const ch=(hasCharter('clock1')?2:0)+(hasCharter('clock2')?3:0)+(onBoard('tournament')?3:0)-(onBoard('ebony')?2:0)-(onBoard('blitz')?4:0);
-  if(bi===2) return BOSS_MOVES+ch+(hasRelic('siege')?6:0)+(hasRelic('hourglass')?3:0)+((BOSS_BY[boss]&&BOSS_BY[boss].moves)||0);
-  return BASE_MOVES+ch+(hasRelic('hourglass')?3:0);
+  const cl=(coatLv()>=6?2:0)+(bi===2&&coatLv()>=10?6:0);
+  if(bi===2) return Math.max(6,BOSS_MOVES+ch-cl+(hasRelic('siege')?6:0)+(hasRelic('hourglass')?3:0)+((BOSS_BY[boss]&&BOSS_BY[boss].moves)||0));
+  return Math.max(6,BASE_MOVES+ch-cl+(hasRelic('hourglass')?3:0));
 }
 
 // ---------- notation ----------
@@ -1825,11 +1874,11 @@ function hudIdle(){
 }
 function renderRelics(){
   const el=$('relics'), rs=run?run.relics:[]; let h='';
-  rs.forEach((r,i)=>{const d=RELIC_BY[r.id], th=curioThumb(r.id); h+=`<button type="button" class="relic" data-ri="${i}" aria-label="${d.name}">${th?`<img src="${th}" alt="">`:d.g+VS}</button>`;});
+  rs.forEach((r,i)=>{const d=RELIC_BY[r.id], th=curioThumb(r.id); h+=`<button type="button" class="relic${RS&&RS.tarnish===i?' tarnished':''}" data-ri="${i}" aria-label="${d.name}">${th?`<img src="${th}" alt="">`:d.g+VS}</button>`;});
   for(let i=rs.length;i<relicMax();i++) h+='<div class="relic empty"></div>';
   el.innerHTML=h; $('relicCount').textContent=rs.length+'/'+relicMax();
 }
-$('relics').addEventListener('click',e=>{const b=e.target.closest('.relic[data-ri]'); if(!b) return; const r=run.relics[+b.dataset.ri], d=RELIC_BY[r.id]; showTip(b,`<b>${d.name}</b>${relicDesc(d,r)}`);});
+$('relics').addEventListener('click',e=>{const b=e.target.closest('.relic[data-ri]'); if(!b) return; const r=run.relics[+b.dataset.ri], d=RELIC_BY[r.id]; showTip(b,`<b>${d.name}</b>${relicDesc(d,r)}${RS&&RS.tarnish===+b.dataset.ri?'<br><i>Tarnished this game: it has no effect.</i>':''}`);});
 function showTip(el,html){const t=$('tip'); t.innerHTML=html; t.hidden=false; const r=el.getBoundingClientRect(), tw=t.offsetWidth, th=t.offsetHeight;
   t.style.left=Math.max(8,Math.min(innerWidth-tw-8,r.left+r.width/2-tw/2))+'px'; let y=r.top-th-8; if(y<8) y=r.bottom+8; t.style.top=y+'px';}
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('.relic')&&!e.target.closest('#tip')) $('tip').hidden=true;});
@@ -1874,12 +1923,13 @@ async function startRound(){
   if(bossId==='hex'||bossId==='gambit'){let gone=false; army.forEach((d,i)=>{if(d&&d.type==='Q'){army[i]=null; gone=true;}}); if(!gone){const r=army.findIndex(d=>d&&d.type==='R'); if(r>=0) army[r]=null;}}
   const extras=bossId==='wall'?[2,3,4,5].map(f=>[rc(5,f),{id:UID++,type:'P',name:rnd(PERSONA.P.enemy),ed:null},'b']):null;
   setBg(...(bossId&&BOSS_BY[bossId].bg?BOSS_BY[bossId].bg:BG[bi]));
+  RS.tarnish=coatLv()>=8&&run.relics.length?Math.floor(Math.random()*run.relics.length):-1;
   RS.phantom=2; RS.bTurns=0; RS.frozenToy=null; RS.locks=new Map(); RS.mines=[]; RS.vines=[]; RS.lastActor=null;
   const oppName=ki>=0?enemy[ki].name:'Opponent';
   setEvent(BLIND[bi].name+(bossId?' vs '+BOSS_BY[bossId].name:''),bossId?'Checkmate to win':'Score '+fmt(RS.target));
   setOpp(oppName,bossId?BOSS_BY[bossId].desc:'Black pieces',rating(run.ante,bi,bossId));
   calcSet(0,0,'Capture to score'); setTurn('Get ready…',null);
-  clearBoardToys(); hud(); renderMoves(); renderCaps(); applyBoardSkin(boardId());
+  clearBoardToys(); hud(); renderMoves(); renderCaps(); applyBoardSkin(boardId()); applyCoat(coatIdx());
   RS.b=await placeArmies(army,enemy,!!bossId,true,extras);
   const ek=toys[kingSq(RS.b,-1)]; if(ek){ek.setExpr('smug',2); say(ek,bossId?rnd(BOSS_BY[bossId].lines.intro):rnd(ENEMY_LINES.taunt),2.6);}
   await wait(.7);
@@ -1889,6 +1939,8 @@ async function startRound(){
   await wait(.5);
   if(bossId==='saboteur'){for(let i=0;i<3;i++) plantMine();}
   if(bossId==='gardener'){for(let i=0;i<3;i++) growVine();}
+  if(RS.tarnish>=0){toast(RELIC_BY[run.relics[RS.tarnish].id].name+' is tarnished',1.6); await wait(1);}
+  if(coatLv()>=7){syncEngine(); RS.log.push({san:'…',ann:''}); renderMoves(); toast('Black moves first',1.2); await wait(.9); return enemyTurn();}
   syncEngine(); updateThreats(); busy=false; setTurn(mustCapture()?'En garde! You must capture':'Your move','w');
 }
 
@@ -2008,7 +2060,7 @@ async function playerMove(m){
   }catch(err){console.error(err); animating=false; busy=false; if(RS) RS.turn='w'; setTurn('Your move','w');}
 }
 function aiDepth(){let d=run.ante<=1?1:run.ante<=4?2:3; if(RS.boss==='tyrant') d=Math.min(3,d+1); if(onBoard('grandmaster')) d=Math.min(3,d+1); if(hasCharter('scout2')&&!RS.mateOnly) d=Math.max(1,d-1); return d;}
-function aiNoise(){const n=[140,60,30,18,10,6,4,2][Math.min(7,run.ante-1)]; return (RS.boss?n*.5:n)*(hasCharter('scout1')?1.8:1)*(onBoard('grandmaster')?.4:1);}
+function aiNoise(){const n=[140,60,30,18,10,6,4,2][Math.min(7,run.ante-1)]; return (RS.boss?n*.5:n)*(hasCharter('scout1')?1.8:1)*(onBoard('grandmaster')?.4:1)*(coatLv()>=9?.35:1);}
 async function enemyTurn(){
   RS.turn='b'; setTurn('Waiting for Black…','b'); thaw(); unlockAll();
   const ek=toys[kingSq(RS.b,-1)]; if(ek) ek.setExpr('smug',1.2);
@@ -2071,7 +2123,7 @@ async function scoreEvent(att,vt,check,entry){
   const kq=kingSq(RS.b,1), ac=att.cell;
   const ctx={cap,at,vt,check,run,st:RS,mine:countSide(1),theirs:countSide(-1),pawns:countType(P),nearKing:cap&&kq>=0&&ac>=0&&Math.max(Math.abs((kq>>3)-(ac>>3)),Math.abs((kq&7)-(ac&7)))<=1};
   for(let i=0;i<run.relics.length;i++){
-    const r=run.relics[i], d=RELIC_BY[r.id]; if(!d.score) continue;
+    const r=run.relics[i], d=RELIC_BY[r.id]; if(!d.score||RS.tarnish===i) continue;
     const eff=d.score(ctx,r); if(!eff) continue;
     for(const e of eff){bumpRelic(i);
       if(e.chips){S.chips+=e.chips; await step(`${d.name} +${e.chips}`,'chips','cChips');}
@@ -2156,7 +2208,7 @@ function tickStatuses(){
   for(const id in RS.rallyCd){RS.rallyCd[id]--; if(RS.rallyCd[id]<=0) delete RS.rallyCd[id];}
 }
 function syncEngine(){
-  SHIELD.length=0; TRANS.length=0; RULES.kpawn=!!(RS&&RS.boss==='warlord'); RULES.bigking=!!(RS&&RS.boss==='juggernaut'); RULES.ronin=!!(RS&&RS.boss==='ronin');
+  SHIELD.length=0; TRANS.length=0; RULES.kpawn=!!(RS&&RS.boss==='warlord'); RULES.bigking=!!(RS&&RS.boss==='juggernaut'); RULES.ronin=!!(RS&&RS.boss==='ronin'); RULES.nodouble=!!(RS&&coatLv()>=4);
   if(RS) for(let s=0;s<64;s++){const t=toys[s]; if(!t||t.side!=='w') continue;
     if(t.type==='P'&&RS.trans[t.def.id]>0) TRANS.push(s);
     if(t.type==='F'&&t.def.ab&&t.def.id!==RS.lastMovedId) SHIELD.push(s);}
@@ -2901,7 +2953,7 @@ function buildLots(drop){
 // portraits of pieces for lot cards
 const pieceCache={};
 function pieceThumb(type,ed,ann){
-  const k=type+(ed||'')+(ann||''); if(pieceCache[k]!=null) return pieceCache[k];
+  const k=type+(ed||'')+(ann||'')+coatShown; if(pieceCache[k]!=null) return pieceCache[k];
   try{const list=[], t=new Toy({id:-1,type,name:'',ed:ed||null,ann:ann||null},'w',false,{scene:thumbScene,list}); t.setExpr('happy',9);
     for(let i=0;i<12;i++) t.update(.05); t.yawG.rotation.y=0; t.root.rotation.y=-.3; thumbScene.remove(t.root); pieceCache[k]=renderThumb(t.root,.3); t.dispose();}
   catch(e){pieceCache[k]='';}
@@ -3000,7 +3052,7 @@ function showShop(){
   shopEl.hidden=false; shopOpen=true;
   if(!shopR){shopR=new THREE.WebGLRenderer({canvas:shopCanvas,antialias:true}); shopR.setPixelRatio(Math.min(window.devicePixelRatio||1,2)); shopR.shadowMap.enabled=true; shopR.shadowMap.type=THREE.PCFSoftShadowMap; new ResizeObserver(frameShop).observe(sBody);}
   if(!sBuilt){buildShopRoom(); sBuilt=true;}
-  {const k=BOARD_BY[boardId()].skin; for(const tl of tiles) tl.material.color.set(tl.userData.dark?k.dark:k.light);}
+  {const k=BOARD_BY[boardId()].skin; for(const tl of tiles) tl.material.color.set(tl.userData.dark?k.dark:k.light);} applyCoat(coatIdx());
   sSel=null; sPending=null; sSwap=-1; busyShop=false; closePlacard(); clearHighlights(); frameShop();
   if(!run.charters) run.charters=[]; if(!run.shop.lots) run.shop.lots=[mkLot(),mkLot()];
   if(!run.charterOffer||run.charterOffer.ante!==run.ante){const id=pickCharter(); run.charterOffer=id?{ante:run.ante,id,sold:false}:null;}
@@ -3064,7 +3116,7 @@ function enterTitle(){
   VIEW.yaw=.55; VIEW.pitch=-.16; VIEW.zoom=stageEl.clientWidth<stageEl.clientHeight*.8?1.32:1.55; VIEW.pan.set(0,0,0); frameCamera(); $('title').hidden=false; $('title').classList.remove('leaving');
 }
 function exitTitle(){
-  titleMode=false; document.body.classList.remove('titlemode'); for(const o of TITLE_HIDE) o.visible=true;
+  titleMode=false; titlePick=false; $('title').classList.remove('picking'); document.body.classList.remove('titlemode'); for(const o of TITLE_HIDE) o.visible=true;
   VIEW.yaw=0; VIEW.pitch=0; VIEW.zoom=1; VIEW.pan.set(0,0,0); frameCamera(); $('title').hidden=true;
 }
 function leaveTitle(fn){if(!titleMode) return fn(); sfx('whoosh'); $('title').classList.add('leaving'); setTimeout(()=>{exitTitle(); fn();},REDUCED?0:330);}
@@ -3074,10 +3126,10 @@ function showTitle(){
   setOpp('Black','Waiting at the board',''); setGoal(false,0,0); $('hOf').textContent='/ —';
   $('hMoves').textContent=BASE_MOVES; $('hMoney').textContent=money(run?run.money:4); $('meClock').classList.remove('low');
   calcSet(0,0,'Capture to score'); setTurn('Welcome',null); renderMoves(); renderCaps(); renderRelics();
-  enterTitle(); renderTitleMenu(); applyBoardSkin(prefBoard()); demoBoard();
+  enterTitle(); renderTitleMenu(); applyBoardSkin(prefBoard()); applyCoat(prefCoat()); demoBoard();
 }
 function renderTitleMenu(){
-  const saved=loadSave(), R=records(); $('tPick').hidden=true; $('tMenu').hidden=false;
+  const saved=loadSave(), R=records(); $('tPick').hidden=true; $('tMenu').hidden=false; if(titlePick) setPicking(false);
   $('tMenu').innerHTML=(saved?`<button class="tBtn play" id="tCont" type="button">Continue<small>${saved.ante<=8?'Event '+roman(saved.ante):'Exhibition'} · ${money(saved.money)}</small></button><button class="tBtn" id="tNew" type="button">New run<small>starts over</small></button>`
       :`<button class="tBtn play" id="tNew" type="button">Play<small>choose a board</small></button>`)
     +`<button class="tBtn brass" id="tAlm" type="button">Almanac<small>boards, curios &amp; bosses</small></button><button class="tBtn blood" id="tHow" type="button">How to play<small>the rules</small></button><button class="tBtn" id="tOpt" type="button">Options<small>sound &amp; speed</small></button>`;
@@ -3092,32 +3144,41 @@ function renderTitleMenu(){
 }
 const swStyle=b=>`--l:${b.skin.light};--d:${b.skin.dark};--f:${b.skin.frame}`;
 const prefBoard=()=>{const id=(loadJSON(PREFS_KEY)||{}).board; return BOARD_BY[id]&&isUnlocked(id)?id:'club';};
-let pickIdx=0;
-function showBoardPicker(){pickIdx=Math.max(0,BOARDS.findIndex(b=>b.id===prefBoard())); $('tMenu').hidden=true; $('tPick').hidden=false; renderPicker(true);}
-function renderPicker(first){
-  const st=boardStore(), b=BOARDS[pickIdx], open=st.unlocked.includes(b.id), best=st.best[b.id];
-  const bestTxt=best?`Best: beat ${best<=8?'Event '+roman(best):eventName(best)}${st.champ[b.id]?' · World Champion':''}`:'No event beaten on this board yet.';
+const prefCoat=()=>{const c=(loadJSON(PREFS_KEY)||{}).coat; return c>0&&c<COATS.length&&coatUnlocked(c)?c:0;};
+let pickIdx=0, pickCoat=0;
+function setPicking(on){titlePick=on; $('title').classList.toggle('picking',on); VIEW.zoom=on?(stageEl.clientWidth<stageEl.clientHeight*.8?1.7:2.05):(stageEl.clientWidth<stageEl.clientHeight*.8?1.32:1.55); VIEW.pitch=on?-.05:-.16; frameCamera();}
+function showBoardPicker(){setPicking(true);pickIdx=Math.max(0,BOARDS.findIndex(b=>b.id===prefBoard())); pickCoat=prefCoat(); $('tMenu').hidden=true; $('tPick').hidden=false; renderPicker(true);}
+function renderPicker(first,coatOnly){
+  const st=boardStore(), b=BOARDS[pickIdx], bOpen=st.unlocked.includes(b.id), best=st.best[b.id], c=COATS[pickCoat], cOpen=pickCoat<=st.coat, open=bOpen&&cOpen;
+  const champ=st.coatChamp[b.id]!=null&&st.coatChamp[b.id]>=0?` · World Champion on ${COATS[st.coatChamp[b.id]].name}`:st.champ[b.id]?' · World Champion':'';
+  const bestTxt=best?`Best: beat ${best<=8?'Event '+roman(best):eventName(best)}${champ}`:'No event beaten on this board yet.';
   $('tPick').innerHTML=`<div class="pRow"><button class="pArrow" type="button" data-pd="-1" aria-label="Previous board">‹</button>
-    <div class="pCard${open?'':' locked'}"><span class="pSw" style="${swStyle(b)}"></span><div class="pTxt"><span class="pK">Board ${pickIdx+1} of ${BOARDS.length}${open?'':' · locked'}</span><b>${b.name}</b><p>${b.effect}</p><small>${open?bestTxt:'Unlock: '+b.unlock}</small></div></div>
+    <div class="pCard${bOpen?'':' locked'}"><span class="pSw" style="${swStyle(b)}">${bOpen?'':'<i class="lk"></i>'}</span><div class="pTxt"><span class="pK">Board ${pickIdx+1} of ${BOARDS.length}${bOpen?'':' · locked'}</span><b>${b.name}</b><p>${b.effect}</p><small>${bOpen?bestTxt:'Unlock: '+b.unlock}</small></div></div>
     <button class="pArrow" type="button" data-pd="1" aria-label="Next board">›</button></div>
-    <div class="pPips">${BOARDS.map((x,i)=>`<button type="button" class="pPip${i===pickIdx?' on':''}${st.unlocked.includes(x.id)?'':' locked'}" data-pi="${i}" style="${swStyle(x)}" aria-label="${x.name}${st.unlocked.includes(x.id)?'':' (locked)'}"></button>`).join('')}</div>
-    <div class="pActs"><button class="tBtn" type="button" id="pBack">Back<small>to the menu</small></button><button class="tBtn play" type="button" id="pStart" ${open?'':'disabled'}>${open?'Start run':'Locked'}<small>${b.name}</small></button></div>`;
+    <div class="pPips">${BOARDS.map((x,i)=>`<button type="button" class="pPip${i===pickIdx?' on':''}${st.unlocked.includes(x.id)?'':' locked'}" data-pi="${i}" style="${swStyle(x)}" aria-label="${x.name}${st.unlocked.includes(x.id)?'':' (locked)'}">${st.unlocked.includes(x.id)?'':'<i class="lk"></i>'}</button>`).join('')}</div>
+    <div class="cRow"><span class="cLbl">Coat</span><div class="cChips">${COATS.map((x,i)=>`<button type="button" class="cChip${i===pickCoat?' on':''}" data-ci="${i}" style="--c:${x.color}" aria-label="${x.name} coat${i<=st.coat?'':' (locked)'}">${i<=st.coat?'':'<i class="lk"></i>'}</button>`).join('')}</div></div>
+    <div class="cInfo"><span class="cChip" style="--c:${c.color}"></span><span><b>${roman(pickCoat+1)} · ${c.name}</b> ${c.rule}${pickCoat?' <i>Plus every earlier coat.</i>':''}${cOpen?'':` <i>Unlock: ${c.unlock}</i>`}</span></div>
+    <div class="pActs"><button class="tBtn" type="button" id="pBack">Back<small>to the menu</small></button><button class="tBtn play" type="button" id="pStart" ${open?'':'disabled'}>${open?'Start run':'Locked'}<small>${b.name} · ${c.name}</small></button></div>`;
   const pick=i=>{pickIdx=(i+BOARDS.length)%BOARDS.length; sfx('swap'); renderPicker(false);};
   $('tPick').querySelectorAll('[data-pd]').forEach(el=>el.onclick=()=>{initAudio(); pick(pickIdx+ +el.dataset.pd);});
   $('tPick').querySelectorAll('[data-pi]').forEach(el=>el.onclick=()=>{initAudio(); if(+el.dataset.pi!==pickIdx) pick(+el.dataset.pi);});
-  $('pBack').onclick=()=>{initAudio(); sfx('select'); applyBoardSkin(prefBoard()); boardRipple(); renderTitleMenu();};
-  $('pStart').onclick=()=>{if(!open) return; initAudio(); sfx('promote'); saveJSON(PREFS_KEY,Object.assign(loadJSON(PREFS_KEY)||{},{board:b.id}));
-    clearSave(); newRun(b.id); countRun(); leaveTitle(showBlinds);};
-  applyBoardSkin(b.id); if(!first){boardRipple(); for(const t of toysAll){t.setExpr(open?'happy':'worried',1); if(Math.random()<.3) hopSmall(t);}}
+  $('tPick').querySelectorAll('[data-ci]').forEach(el=>el.onclick=()=>{initAudio(); const i=+el.dataset.ci; if(i!==pickCoat){pickCoat=i; sfx('sparkle'); renderPicker(false,true);}});
+  $('pBack').onclick=()=>{initAudio(); sfx('select'); applyBoardSkin(prefBoard()); applyCoat(prefCoat()); boardRipple(); renderTitleMenu();};
+  $('pStart').onclick=()=>{if(!open) return; initAudio(); sfx('promote'); saveJSON(PREFS_KEY,Object.assign(loadJSON(PREFS_KEY)||{},{board:b.id,coat:pickCoat}));
+    clearSave(); newRun(b.id,pickCoat); countRun(); leaveTitle(showBlinds);};
+  applyBoardSkin(b.id); applyCoat(pickCoat);
+  if(coatOnly){for(const t of toysAll) if(t.side==='w'){t.setExpr(cOpen?'love':'worried',1.2); hopSmall(t); if(Math.random()<.25) burst(t.center(),[c.color,'#ffffff'],6,1.5,.05,1.5,.5);}}
+  else if(!first){boardRipple(); for(const t of toysAll){t.setExpr(open?'happy':'worried',1); if(Math.random()<.3) hopSmall(t);}}
 }
 document.addEventListener('keydown',e=>{if(!titleMode||$('tPick').hidden||!$('screen').hidden) return;
   if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault(); pickIdx+=e.key==='ArrowLeft'?-1:1; pickIdx=(pickIdx+BOARDS.length)%BOARDS.length; sfx('swap'); renderPicker(false);}
+  else if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault(); pickCoat=Math.max(0,Math.min(COATS.length-1,pickCoat+(e.key==='ArrowUp'?1:-1))); sfx('sparkle'); renderPicker(false,true);}
   else if(e.key==='Escape') $('pBack').click();});
 const unlockQ=[]; let unlockShowing=false;
 function showUnlock(b){unlockQ.push(b); if(!unlockShowing) nextUnlock();}
 function nextUnlock(){
   const b=unlockQ.shift(); if(!b){unlockShowing=false; return;} unlockShowing=true; const el=$('unlockNote');
-  el.innerHTML=`<span class="pSw" style="${swStyle(b)}"></span><div><small>New board unlocked</small><b>${b.name}</b><em>${b.effect}</em></div>`;
+  el.innerHTML=`${b.sw}<div><small>${b.label}</small><b>${b.name}</b><em>${b.effect}</em></div>`;
   el.classList.remove('out'); el.hidden=false; el.style.animation='none'; void el.offsetWidth; el.style.animation=''; sfx('promote');
   setTimeout(()=>{el.classList.add('out'); setTimeout(()=>{el.hidden=true; nextUnlock();},380);},4200);
 }
@@ -3131,11 +3192,12 @@ function showHowTo(){
       <dt>Defeat</dt><dd>Get checkmated, run out of moves, or stalemate, and the run is over.</dd>
       <dt>Between games</dt><dd>Spend your purse in the Curio Shoppe on curios, recruits, promotions and inlays. Open lots to choose from curios, annotations or recruits, and sign one club charter per event for a lasting edge. Win eight events to become World Champion.</dd>
       <dt>Boards</dt><dd>Every run is played on a board you choose before it starts. Each board has its own look and its own rules. Only the Club Board is open at first; the rest unlock as you play.</dd>
+      <dt>Coats</dt><dd>The coat is the lacquer on your pieces and the run's difficulty. Ivory is the standard game. Each coat after it adds one restriction and keeps all the earlier ones. Beat events on a coat to unlock the next.</dd>
       <dt>Controls</dt><dd>Tap a piece, then a marked square. Worried eyes mean that piece is under attack. Drag to turn the board, scroll or pinch to zoom, right-drag or use two fingers to pan.</dd>
     </dl>${backBtn}`,true);
   on('bBack',hideScreen);
 }
-const ALM_TABS=[['boards','Boards'],['curios','Curios'],['rare','Rare pieces'],['ann','Annotations'],['charters','Charters'],['bosses','Endgame bosses']];
+const ALM_TABS=[['boards','Boards'],['coats','Coats'],['curios','Curios'],['rare','Rare pieces'],['ann','Annotations'],['charters','Charters'],['bosses','Endgame bosses']];
 function showAlmanac(tab){
   const card=(pic,meta,name,desc,extra)=>`<div class="lotcard"><div class="pic">${pic}</div>${meta?`<span class="meta">${meta}</span>`:''}<b>${name}</b><small>${desc}${extra||''}</small></div>`;
   const ph=key=>`<img data-thumb="${key}" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">`;
@@ -3144,7 +3206,8 @@ function showAlmanac(tab){
   if(tab==='rare') items=RARE_T.map(t=>{const R=RARE[t]; return card(ph('piece:'+t),'£'+R.cost,'The '+R.name,R.move,`<br><b>${R.ab}:</b> ${R.abDesc}<br><i>Unlock: ${R.feat}.</i>`);}).join('');
   if(tab==='ann') items=ANN_KEYS.map(k=>card(`<span class="annmark">${k}</span>`,'Annotation',ANNOT[k].name,ANNOT[k].desc)).join('');
   if(tab==='charters') items=CHARTERS.map(c=>card(`<span class="annmark" style="font-size:24px">§</span>`,c.req?'Follows '+CHARTER_BY[c.req].name:'Club charter',c.name,c.desc)).join('');
-  if(tab==='boards'){const st=boardStore(); items=BOARDS.map(b=>{const open=st.unlocked.includes(b.id); return card(`<span class="pSw" style="${swStyle(b)}${open?'':';filter:grayscale(.8) brightness(.55)'}"></span>`,open?(st.best[b.id]?'Best: beat Event '+roman(Math.min(20,st.best[b.id])):'Unlocked'):'Locked',b.name,b.effect,b.unlock?`<br><i>Unlock: ${b.unlock}</i>`:'');}).join('');}
+  if(tab==='boards'){const st=boardStore(); items=BOARDS.map(b=>{const open=st.unlocked.includes(b.id); return card(`<span class="pSw" style="${swStyle(b)}">${open?'':'<i class="lk"></i>'}</span>`,open?(st.best[b.id]?'Best: beat Event '+roman(Math.min(20,st.best[b.id])):'Unlocked'):'Locked',b.name,b.effect,b.unlock?`<br><i>Unlock: ${b.unlock}</i>`:'');}).join('');}
+  if(tab==='coats'){const st=boardStore(); items=COATS.map((c,i)=>card(`<span class="cChip big" style="--c:${c.color}">${i<=st.coat?'':'<i class="lk"></i>'}</span>`,`Coat ${roman(i+1)} · ${i<=st.coat?'unlocked':'locked'}`,c.name,c.rule,(i?' <i>Plus every earlier coat.</i>':'')+(c.unlock?`<br><i>Unlock: ${c.unlock}</i>`:''))).join('');}
   if(tab==='bosses') items=BOSSES.map(b=>card(ph('boss:'+b.id),'From event '+roman(b.min||1),b.name,b.desc,`<br><i>“${b.lines.intro[0]}”</i>`)).join('');
   showScreen(`<span class="eyebrow">The Almanac</span><h2>Everything you can meet on a run</h2>
     <div class="tabs" role="tablist">${ALM_TABS.map(([k,l])=>`<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${k===tab}">${l}</button>`).join('')}</div>
@@ -3191,7 +3254,7 @@ frameHooks.push(dt=>{
   if(clock>tBlink){tBlink=clock+2.2+Math.random()*4; const eyes=document.querySelectorAll('.tEye'); eyes.forEach(e=>e.classList.add('blink')); setTimeout(()=>eyes.forEach(e=>e.classList.remove('blink')),130);}
 });
 
-function previewArmy(drop){applyBoardSkin(boardId()); clearBoardToys(); return placeArmies(run.army,null,false,drop).then(b=>{RS=null; return b;});}
+function previewArmy(drop){applyBoardSkin(boardId()); applyCoat(coatIdx()); clearBoardToys(); return placeArmies(run.army,null,false,drop).then(b=>{RS=null; return b;});}
 function showBlinds(){
   RS=null; run.phase='blind'; busy=true;
   const bi=run.blind, bid=bossFor(run.ante), boss=BOSS_BY[bid], key=run.ante+'-'+bi;
@@ -3201,10 +3264,10 @@ function showBlinds(){
     const st=i<bi?' done':i===bi?' now':'', nm=i===2?`Endgame · ${boss.name}`:BLIND[i].name;
     const goal=i===2?`Checkmate within ${movesFor(2,bid)} moves. ${boss.desc}`:`Score ${fmt(blindTarget(run.ante,i))} points in ${movesFor(i,null)} moves.`;
     const pic=i===2?bossThumb(bid):'', quote=i===2?`<small class="quote">“${boss.lines.intro[0]}”</small>`:'';
-    return `<div class="fixture${st}${i===2?' boss':''}"><div class="no">${pic?`<img class="bossPic" src="${pic}" alt="${boss.name}">`:roman(i+1)}</div><div><b>${nm}</b><span class="elo">${rating(run.ante,i,i===2?bid:null)}</span><small>${goal}</small>${quote}</div><div class="rw">${i<bi?'Won':money(BLIND[i].reward)}</div></div>`;}).join('');
+    return `<div class="fixture${st}${i===2?' boss':''}"><div class="no">${pic?`<img class="bossPic" src="${pic}" alt="${boss.name}">`:roman(i+1)}</div><div><b>${nm}</b><span class="elo">${rating(run.ante,i,i===2?bid:null)}</span><small>${goal}</small>${quote}</div><div class="rw">${i<bi?'Won':money(i===0&&coatLv()>=2?0:BLIND[i].reward)}</div></div>`;}).join('');
   const theirs=run.pending.enemy.filter(Boolean).map(d=>gl(d.type)).join(' ');
   const mine=run.army.filter(d=>d&&!(bi===2&&bid==='gambit'&&d.type==='Q')).map(d=>glw(d.type)).join(' ');
-  showScreen(`<div class="row spread"><div><span class="eyebrow">${run.ante<=8?`Event ${roman(run.ante)} of VIII`:'Exhibition'} · ${BOARD_BY[boardId()].name}</span><h2>${eventName(run.ante)}</h2></div><div class="pursebig">${money(run.money)}</div></div>
+  showScreen(`<div class="row spread"><div><span class="eyebrow">${run.ante<=8?`Event ${roman(run.ante)} of VIII`:'Exhibition'} · ${BOARD_BY[boardId()].name} · ${COATS[coatIdx()].name} coat</span><h2>${eventName(run.ante)}</h2></div><div class="pursebig">${money(run.money)}</div></div>
     <div class="fixtures">${rows}</div>
     <div><h3>Black</h3><div class="glyphs">${theirs}</div></div>
     <div><h3>White · you</h3><div class="glyphs">${mine}</div></div>
@@ -3216,7 +3279,7 @@ function showBlinds(){
 
 function showCashOut(kind){
   const bi=run.blind, boss=RS.boss?BOSS_BY[RS.boss]:null, lines=[];
-  lines.push([boss?`Endgame won against ${boss.name}`:`${BLIND[bi].name} won`,BLIND[bi].reward]);
+  const rose=bi===0&&coatLv()>=2; lines.push([boss?`Endgame won against ${boss.name}`:`${BLIND[bi].name} won${rose?' (Rose coat: no prize)':''}`,rose?0:BLIND[bi].reward]);
   const per=(hasRelic('tempo')?2:1)+(onBoard('ledger')?1:0); if(RS.moves>0) lines.push([`${RS.moves} move${RS.moves>1?'s':''} to spare × ${money(per)}`,RS.moves*per]);
   if(kind==='mate'&&!RS.mateOnly) lines.push(['Checkmate bonus',3]);
   if(kind==='mate'&&hasRelic('regicide')) lines.push(['Regicide',5]);
@@ -3241,7 +3304,7 @@ function showCashOut(kind){
 
 // ---------- endings ----------
 function statsHtml(){const s=run.stats; return ledger([
-  ['Board',BOARD_BY[boardId()].name],['Furthest event',run.ante<=8?`${roman(run.ante)} · ${eventName(run.ante)}`:eventName(run.ante)],['Games won',s.rounds],['Checkmates delivered',s.mates||0],
+  ['Board',BOARD_BY[boardId()].name],['Coat',COATS[coatIdx()].name],['Furthest event',run.ante<=8?`${roman(run.ante)} · ${eventName(run.ante)}`:eventName(run.ante)],['Games won',s.rounds],['Checkmates delivered',s.mates||0],
   ['Pieces captured',s.caps],['Best single capture',fmt(s.best)+(s.bestLabel?` (${s.bestLabel})`:'')]]);}
 function showGameOver(kind){
   const mate=RS&&RS.mateOnly;
@@ -3250,7 +3313,7 @@ function showGameOver(kind){
   recordRun(false);
   showScreen(`<span class="eyebrow">${eventName(run.ante)}</span><h2>${head}</h2><p>${why}</p><h3>Your run</h3>${statsHtml()}
     <div class="row end"><button class="btn ghost sm" id="bMenu" type="button">Main menu</button><button class="btn" id="bAgain" type="button">New run</button></div>`);
-  on('bAgain',()=>{newRun(boardId()); countRun(); showBlinds();}); on('bMenu',showTitle);
+  on('bAgain',()=>{newRun(boardId(),coatIdx()); countRun(); showBlinds();}); on('bMenu',showTitle);
 }
 function showVictory(){
   recordRun(true); {const st=boardStore(); st.champ[boardId()]=true; saveJSON(BOARDS_KEY,st);} unlockBoard('grandmaster'); sfx('win'); burst(V3(0,1,0),['#ecd08a','#f2e8d0','#8c2b2d','#c9a24a'],80,7,.08,7,2,-9);
