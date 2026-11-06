@@ -269,6 +269,9 @@ button{font:inherit;color:inherit}
 .nameplate p.rare i{color:#6a3a8a}
 .bossPic{display:block;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#3a2418,#150e0a 75%);box-shadow:0 0 0 2px var(--blood),0 0 0 4px var(--paper),0 0 0 5px var(--brass-d)}
 .fixture .quote{font-style:italic;color:var(--blood)}
+.fixture.super{background:linear-gradient(90deg,#1c143a26,#c9a24a33 60%,#c9a24a00)}
+.fixture.super b{color:#5a2a8a}
+.fixture.super .bossPic{background:radial-gradient(circle at 50% 40%,#2a2450,#08060f 75%);box-shadow:0 0 0 2px #ecd08a,0 0 0 4px #1a1030,0 0 0 5px var(--brass-d),0 0 18px #c9a24a99}
 /* the title: a floating board over a checkerboard vortex, gilt lettering with googly eyes, chunky press-down buttons */
 body.titlemode #app>*:not(#stage){visibility:hidden}
 body.titlemode #stage{position:fixed;inset:0;z-index:30;border:0;border-radius:0;box-shadow:none}
@@ -724,8 +727,25 @@ const BOSSES=[
  {id:'gardener',name:'The Gardener',min:1,desc:'Thorny vines grow on empty squares and your pieces cannot enter them. Black tramples vines it steps on. A new vine grows every 3rd Black move.',bg:['#081208','#1a3a14','#4a7a2a'],
   lines:{intro:['Let it grow~','Every garden needs pruning.'],taunt:['Grow, grow!','Mind the thorns, dear.'],kill:['Pruned!','Compost!'],hurt:['My roses!','Weeds!'],check:['Get off my lawn!'],lose:['Wilting...'],win:['What a lovely garden.']},grow:['Sprout!','Grow, my darlings!','A little water...']},
 ];
-// Super bosses for the final event go in FINAL_BOSSES (same shape plus final:true). Empty for now.
-const FINAL_BOSSES=[];
+// The Celestial Court: the superbosses of the final event (the World Championship's Endgame). Each must be checkmated twice.
+const FINAL_BOSSES=[
+ {id:'sun',name:'The Sun',final:true,min:8,moves:12,desc:'Every 3rd Black move, a solar flare burns your most valuable piece on any line through the Sun, straight through anything in the way.',bg:['#1a0a02','#4a1a04','#c06010'],
+  lines:{intro:['All things orbit me.','Kneel in my light.'],taunt:['Feel the heat.','Bask, little pieces.'],kill:['Scorched!','Ashes, ashes.'],hurt:['A sunspot!','You dim me?'],check:['You dare block the sun?','Shade? For ME?'],lose:['The light... goes... out...'],win:['A new dawn. Mine.']},
+  rise:['I RISE AGAIN!','Every dawn, I return!'],flare:['FLARE!','Burn!','Too close to the sun!']},
+ {id:'moon',name:'The Moon',final:true,min:8,moves:12,desc:"Black's pieces hide in the dark more than 2 squares from your army, and the Moon's King strides up to 2 squares in any direction.",bg:['#04060c','#121a30','#6a7aa8'],
+  lines:{intro:['Hush. The night is mine.','You play by my light now.'],taunt:['Can you see me?','The tide is turning.'],kill:['Moonstruck!','Lights out.'],hurt:['A crater!','Wax and wane...'],check:['A cloud! A cloud!'],lose:['Waning... gone...'],win:['Goodnight, little pieces.']},
+  rise:['Full moon tonight!','I wax once more!']},
+ {id:'comet',name:'The Comet',final:true,min:8,moves:12,desc:"Black's Pawns move and capture 1 square in any direction, and its Knights also step 1 square like Kings.",bg:['#02101a','#0a2c3a','#3ab0c8'],
+  lines:{intro:['Make way! Coming through!','Once a century. Lucky you.'],taunt:['Whoosh!','Keep up!'],kill:['Impact!','Crater!'],hurt:['My tail!','That stung!'],check:['Course correction!'],lose:['Burning... up...'],win:['See you next century!']},
+  rise:['Back around the sun!','Second pass!']},
+ {id:'eclipse',name:'The Eclipse',final:true,min:8,moves:12,desc:'After each Black move, your two most valuable pieces fall into shadow and cannot move on your next turn.',bg:['#08040e','#1c0e2e','#ff8a3a'],
+  lines:{intro:['Darkness at noon.','I swallow the light.'],taunt:['Look away.','Totality is near.'],kill:['Into the dark.','Shadowed!'],hurt:['A flare of light!','It burns!'],check:['Light? Here?!'],lose:['The sun... returns...'],win:['Totality.']},
+  rise:['The shadow returns!','A second totality!'],shade:['Into my shadow.','Darkness falls.','Hide your light.']},
+ {id:'void',name:'The Void',final:true,min:8,moves:12,desc:'Every 3rd Black move, your piece nearest the Void falls past its horizon and turns Black for the rest of the game.',bg:['#010103','#100620','#5a2a8a'],
+  lines:{intro:['...','Everything falls in eventually.'],taunt:['Closer.','Nothing escapes.'],kill:['Consumed.','Gone.'],hurt:['...!','A ripple.'],check:['Impossible.'],lose:['Even I... end...'],win:['Silence.']},
+  rise:['Nothing stays dead in the dark.','I am still here.'],pull:['Come here.','Fall.','Past the horizon.']},
+];
+const isFinalBoss=id=>!!(id&&BOSSES.every(b=>b.id!==id)&&FINAL_BOSSES.some(b=>b.id===id));
 const BOSS_BY=Object.fromEntries(BOSSES.concat(FINAL_BOSSES).map(b=>[b.id,b]));
 
 const BLIND=[
@@ -738,7 +758,7 @@ const eventName=a=>a<=8?EVENTS[a-1]:`Exhibition Tour ${a-8}`;
 const ANTE_BASE=[120,220,380,600,950,1450,2200,3300];
 function anteBase(a){return a<=8?ANTE_BASE[a-1]:Math.round(3300*Math.pow(1.7,a-8));}
 function blindTarget(a,bi){return bi===2?0:Math.round(anteBase(a)*BLIND[bi].mul*(coatLv()>=3?1.25:1)/10)*10;}
-function rating(a,bi,boss){return 800+(Math.min(a,12)-1)*190+bi*50+(boss==='tyrant'?150:0);}
+function rating(a,bi,boss){return 800+(Math.min(a,12)-1)*190+bi*50+(boss==='tyrant'?150:0)+(isFinalBoss(boss)?300:0);}
 const BASE_MOVES=14, BOSS_MOVES=28;
 
 // ---------- armies ----------
@@ -762,6 +782,7 @@ function enemyArmy(ante,bi,bossId){
   a[4]=mk('K');
   let list=[], pawns;
   if(bossId==='mirror'){ list=['R','N','B','Q','B','N','R']; pawns=8; }
+  else if(isFinalBoss(bossId)){ list=['R','N','B','Q','B','N','R']; pawns=6; } // the Court arrives in full
   else {
     const end=bi===2; // endgames use reduced material, like a real endgame
     const n=(end?Math.min(5,1+Math.floor(ante*.6)):Math.min(7,1+Math.floor(ante*.8)+bi))+(onBoard('royal')?1:0);
@@ -1136,7 +1157,74 @@ function buildModel(t){
 const phong=(c,sh,em,extra)=>new THREE.MeshPhongMaterial(Object.assign({color:c,specular:0xffffff,shininess:sh||60,emissive:em||0x000000},extra||{}));
 const BMG=(k,f)=>geo('boss_'+k,f);
 const MINE_DARK=new THREE.MeshPhongMaterial({color:0x1a1a1e,specular:0xffffff,shininess:60});
+// ---- the Celestial Court's shared look: star-field enamel, gilt orrery rings, a hovering star-chart dais ----
+let STAR_TEX=null, CHART_TEX=null, ACC_TEX=null;
+function starTex(){
+  if(STAR_TEX) return STAR_TEX;
+  return STAR_TEX=cvs(256,256,(g,w,h)=>{g.fillStyle='#8f8aa8'; g.fillRect(0,0,w,h);
+    for(let i=0;i<6;i++){const x=Math.random()*w,y=Math.random()*h,r=30+Math.random()*60,gr=g.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba(70,50,120,.4)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(0,0,w,h);}
+    for(let i=0;i<240;i++){const k=Math.random(), z=k<.85?1.8:3.4; g.fillStyle=`rgba(255,255,255,${.45+k*.55})`; g.fillRect(Math.random()*w,Math.random()*h,z,z);}});
+}
+function starMat(tint,glow){const c=new THREE.Color(tint); return new THREE.MeshToonMaterial({color:c,map:starTex(),gradientMap:gradTex,emissive:c,emissiveMap:starTex(),emissiveIntensity:glow==null?.35:glow});}
+const ORRERY_M=new THREE.MeshPhongMaterial({color:0xc9a24a,specular:0xfff2c0,shininess:90,emissive:0x2a1a04});
+function chartTex(){
+  if(CHART_TEX) return CHART_TEX;
+  return CHART_TEX=cvs(256,256,(g)=>{g.strokeStyle='rgba(236,208,138,.8)'; g.lineWidth=3; g.beginPath(); g.arc(128,128,122,0,Math.PI*2); g.stroke(); g.lineWidth=1.2; g.beginPath(); g.arc(128,128,100,0,Math.PI*2); g.stroke();
+    for(let i=0;i<48;i++){const a=i/48*Math.PI*2,l=i%4?6:13; g.beginPath(); g.moveTo(128+Math.cos(a)*122,128+Math.sin(a)*122); g.lineTo(128+Math.cos(a)*(122-l),128+Math.sin(a)*(122-l)); g.stroke();}
+    const pts=[...Array(14)].map(()=>{const a=Math.random()*Math.PI*2,r=Math.sqrt(Math.random())*88; return [128+Math.cos(a)*r,128+Math.sin(a)*r];});
+    g.strokeStyle='rgba(180,200,255,.55)'; g.beginPath(); pts.forEach((q,i)=>{if(i%5) g.lineTo(q[0],q[1]); else g.moveTo(q[0],q[1]);}); g.stroke();
+    g.fillStyle='rgba(255,255,255,.95)'; for(const q of pts){g.beginPath(); g.arc(q[0],q[1],2.3,0,Math.PI*2); g.fill();}});
+}
+function accretionTex(){
+  if(ACC_TEX) return ACC_TEX;
+  ACC_TEX=cvs(256,256,(g,w,h)=>{const gr=g.createRadialGradient(128,128,0,128,128,128); gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(.4,'rgba(0,0,0,0)'); gr.addColorStop(.43,'rgba(255,225,170,1)'); gr.addColorStop(.56,'rgba(255,120,60,.85)'); gr.addColorStop(.76,'rgba(150,60,210,.5)'); gr.addColorStop(1,'rgba(40,10,80,0)'); g.fillStyle=gr; g.fillRect(0,0,w,h);
+    g.lineWidth=2; for(let i=0;i<44;i++){const r=58+Math.random()*62,a=Math.random()*Math.PI*2; g.strokeStyle=`rgba(255,${150+Math.random()*80|0},${100+Math.random()*120|0},${.15+Math.random()*.3})`; g.beginPath(); g.arc(128,128,r,a,a+.4+Math.random()*.8); g.stroke();}});
+  ACC_TEX.wrapS=ACC_TEX.wrapT=THREE.ClampToEdgeWrapping; return ACC_TEX;
+}
+function celestial(t){
+  const M=t.model, an=t.bossAnims=[];
+  const orb=new THREE.Group(); orb.position.y=.6; M.add(orb);
+  const r1=part(orb,BMG('orrA',()=>new THREE.TorusGeometry(.43,.013,8,56)),ORRERY_M,null,null,[Math.PI/2+.4,0,0],0);
+  const r2=part(orb,BMG('orrB',()=>new THREE.TorusGeometry(.39,.01,8,56)),ORRERY_M,null,null,[Math.PI/2-.55,0,.5],0);
+  part(r1,sph(.04),ORRERY_M,[.43,0,0],null,null,0); part(r2,sph(.03),acc('#f6f0e6'),[-.39,0,0],null,null,0);
+  t.orrery=[r1,r2];
+  const dais=new THREE.Mesh(BMG('dais',()=>new THREE.CircleGeometry(.62,48)),new THREE.MeshBasicMaterial({map:chartTex(),transparent:true,opacity:.9,depthWrite:false,blending:THREE.AdditiveBlending}));
+  dais.rotation.x=-Math.PI/2; dais.position.y=.03; t.root.add(dais);
+  const y0=M.position.y;
+  an.push(dt=>{M.position.y=y0+.14+Math.sin(clock*1.5)*.05; orb.rotation.y+=dt*.7; r2.rotation.z+=dt*.4; dais.rotation.z+=dt*.12;});
+  return an;
+}
 const BOSS_LOOK={
+  sun:{mat:starMat('#ffa23a',.5),noCrown:true,build(t){const M=t.model, an=celestial(t); // a turning corona of flame rays
+    const cor=new THREE.Group(); cor.position.set(0,.84,-.06); M.add(cor);
+    const fire=new THREE.MeshBasicMaterial({color:0xffa52a}), core=new THREE.MeshBasicMaterial({color:0xfff2b0});
+    for(let i=0;i<14;i++){const a=i/14*Math.PI*2; part(cor,cone(.05,i%2?.2:.3),i%2?fire:core,[Math.cos(a)*.34,Math.sin(a)*.34,0],null,[0,0,a-Math.PI/2],0);}
+    part(cor,BMG('sunRing',()=>new THREE.TorusGeometry(.3,.035,8,40)),fire,null,null,null,0);
+    const halo=part(cor,sph(.5),new THREE.MeshBasicMaterial({color:0xff9a2a,transparent:true,opacity:.18,depthWrite:false,blending:THREE.AdditiveBlending}),null,[1,1,.2],null,0);
+    part(M,BMG('sunBand',()=>new THREE.CylinderGeometry(.21,.19,.1,20,1,true)),GOLDM,[0,1.03,0]);
+    an.push(dt=>{cor.rotation.z-=dt*.6; halo.scale.set(1+Math.sin(clock*3)*.06,1+Math.sin(clock*3)*.06,.2); if(Math.random()<dt*3) burst(t.root.position.clone().add(V3((Math.random()-.5)*.6,t.h*1.15,(Math.random()-.5)*.3)),['#ffb030','#ffe08a'],1,.2,.035,.8,.7,1.2,t.scn,-99);});}},
+  moon:{mat:starMat('#cfd8ee',.3),noCrown:true,build(t){const M=t.model, an=celestial(t), sil=phong(0xe8eef8,120,0x2a3448); // crescent crown, craters, a moonlet
+    const cr=part(M,BMG('moonCres',()=>new THREE.TorusGeometry(.14,.04,12,32,Math.PI*1.3)),sil,[0,1.13,0],null,[0,0,-Math.PI*.15]);
+    for(const q of [[.17,.95,.1],[-.18,.7,.12],[.2,.75,-.05]]) part(M,sph(.04),acc('#8a94b0'),q,[1,1,.4],null,0);
+    const ml=new THREE.Group(); ml.position.y=.82; M.add(ml); part(ml,sph(.065),sil,[.44,0,0]);
+    an.push(dt=>{ml.rotation.y+=dt*1.2; ml.rotation.z=Math.sin(clock*.5)*.3; cr.rotation.y=Math.sin(clock*.8)*.25;});}},
+  comet:{mat:starMat('#6fd6f2'),noCrown:true,build(t){const M=t.model, an=celestial(t), ice=phong(0xbff4ff,160,0x1a5a6a,{transparent:true,opacity:.92}); // swept ice spikes and a glowing tail
+    for(let i=0;i<5;i++){const a=(i-2)*.38, m=part(M,cone(.05,.36-Math.abs(i-2)*.05),ice,[Math.sin(a)*.14,1.02,-.06],null,null,0); m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(Math.sin(a)*.5,.6,-.9).normalize());}
+    const tail=part(M,BMG('cometTail',()=>{const g=new THREE.ConeGeometry(.16,1.7,20,1,true); g.translate(0,-.85,0); return g;}),new THREE.MeshBasicMaterial({color:0x7ae0ff,transparent:true,opacity:.22,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}),[0,.9,-.12],null,null,0); tail.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),new THREE.Vector3(-.75,.45,-.5).normalize());
+    an.push(dt=>{tail.material.opacity=.18+Math.sin(clock*7)*.05; if(Math.random()<dt*6){const q=t.head(); burst(q.add(V3((Math.random()-.5)*.3,.05,(Math.random()-.5)*.3)),['#bff4ff','#ffffff','#7ae0ff'],1,.4,.03,.6,.6,.5,t.scn,-99);}});}},
+  eclipse:{mat:starMat('#7a5ad0'),noCrown:true,build(t){const M=t.model, an=celestial(t); // a black disc with a blazing corona and beads of light
+    const cg=new THREE.Group(); cg.position.set(0,.84,-.08); M.add(cg);
+    const glowM=new THREE.MeshBasicMaterial({color:0xffc070,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false});
+    part(cg,BMG('eclDisc',()=>new THREE.CircleGeometry(.285,40)),new THREE.MeshBasicMaterial({color:0x07040c}),[0,0,-.01],null,null,0);
+    part(cg,BMG('eclRing',()=>new THREE.TorusGeometry(.29,.03,10,48)),new THREE.MeshBasicMaterial({color:0xfff0c8}),null,null,null,0);
+    const flare=part(cg,BMG('eclFlare',()=>new THREE.RingGeometry(.28,.54,48)),glowM,null,null,null,0);
+    for(let i=0;i<6;i++){const a=i/6*Math.PI*2+.3; part(cg,sph(.025),WHITE,[Math.cos(a)*.3,Math.sin(a)*.3,.01],null,null,0);}
+    an.push(dt=>{flare.scale.setScalar(1+Math.sin(clock*2.4)*.07); glowM.opacity=.7+Math.sin(clock*5)*.15; cg.rotation.z+=dt*.25;});}},
+  void:{mat:starMat('#3a2060',.5),noCrown:true,build(t){const M=t.model, an=celestial(t); // an accretion disk, orbiting shards, burning eyes
+    const disk=part(M,BMG('voidDisk',()=>new THREE.RingGeometry(.32,.8,64)),new THREE.MeshBasicMaterial({map:accretionTex(),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}),[0,.5,0],null,[-Math.PI/2+.35,0,0],0);
+    const shards=new THREE.Group(); shards.position.y=1.14; M.add(shards); const sm=phong(0x2a1440,140,0x3a1060);
+    for(let i=0;i<7;i++){const a=i/7*Math.PI*2; part(shards,BMG('vShard',()=>new THREE.OctahedronGeometry(.045,0)),sm,[Math.cos(a)*.25,Math.sin(i*1.7)*.05,Math.sin(a)*.25],[1,1.8,1],[i,i*2,0]);}
+    an.push(dt=>{disk.rotation.z+=dt*1.1; shards.rotation.y-=dt*.9; t.laser=true;});}},
   twins:{mat:toon('#e9c3dc'),noCrown:true,build(t){const M=t.model, an=t.bossAnims=[];
     const cs=[-1,1].map(s=>{const c=new THREE.Group(); c.position.set(s*.13,1.04,0); c.rotation.z=-s*.35; M.add(c); const m=acc(s<0?'#ff7ab0':'#6ab0ff');
       part(c,BMG('mini',()=>new THREE.CylinderGeometry(.11,.1,.08,12,1,true)),m); for(let i=0;i<5;i++){const a=i/5*Math.PI*2; part(c,cone(.025,.08),m,[Math.sin(a)*.1,.08,Math.cos(a)*.1],null,null,0);} return c;});
@@ -1390,10 +1478,10 @@ let toysAll=[];
 class Toy{
   constructor(def,side,boss,opt){
     this.def=def; this.type=def.type; this.side=side; this.name=def.name; this.ed=side==='w'?def.ed:null; this.boss=!!boss;
-    const F=FACE[this.type]; this.F=F; this.h=F.h*(boss?1.25:1);
+    const F=FACE[this.type]; this.F=F; this.bs=boss?(isFinalBoss(def.boss)?1.45:1.25):1; this.h=F.h*this.bs;
     this.root=new THREE.Group(); this.squash=new THREE.Group(); this.yawG=new THREE.Group(); this.pivot=new THREE.Group(); this.model=new THREE.Group();
     this.root.add(this.squash); this.squash.add(this.yawG); this.yawG.add(this.pivot); this.pivot.add(this.model);
-    this.pivot.position.y=F.h*.45; this.model.position.y=-F.h*.45; if(boss) this.squash.scale.setScalar(1.25);
+    this.pivot.position.y=F.h*.45; this.model.position.y=-F.h*.45; if(boss) this.squash.scale.setScalar(this.bs);
     this.scn=(opt&&opt.scene)||scene; this.list=(opt&&opt.list)||toysAll; this.cam=(opt&&opt.cam)||null;
     this.mat=this.ed?edMat(this.ed):side==='w'?MAT_W:MAT_B;
     this.bossId=def.boss||null; if(this.bossId&&BOSS_LOOK[this.bossId]){const L=BOSS_LOOK[this.bossId]; this.mat=L.mat; this.noCrown=!!L.noCrown;}
@@ -1453,7 +1541,7 @@ class Toy{
     if(clock>this.yawLock){this.yawGoal=(()=>{const cp=(this.cam||camera).position; return Math.atan2(cp.x-this.root.position.x,cp.z-this.root.position.z)*.85;})();}
     let d=this.yawGoal-this.yaw; d=Math.atan2(Math.sin(d),Math.cos(d)); this.yaw+=d*(1-Math.exp(-dt*9)); this.yawG.rotation.y=this.yaw;
     const br=1+Math.sin(clock*2.2+this.phase)*.018, s=this.sqz*br, w=1/Math.sqrt(Math.max(.05,s));
-    const bs=this.boss?1.25:1; this.squash.scale.set(w*bs,s*bs,w*bs);
+    const bs=this.bs; this.squash.scale.set(w*bs,s*bs,w*bs);
     if(this.shakeT>0){this.shakeT-=dt; this.yawG.position.x=(Math.random()-.5)*.08;} else this.yawG.position.x=0;
     if(this.bossAnims) for(const f of this.bossAnims) f(dt);
     if(this.ed==='gold'&&Math.random()<dt*2.2) glint(this,['#fff6c8','#ffd34d']);
@@ -1867,7 +1955,7 @@ function hud(){
 }
 function hudIdle(){
   if(!run) return; const bi=run.blind, bid=bossFor(run.ante), boss=BOSS_BY[bid];
-  setEvent(BLIND[bi].name+(bi===2?' vs '+boss.name:''),bi===2?'Checkmate to win':'Score '+fmt(blindTarget(run.ante,bi)));
+  setEvent((bi===2&&boss.final?'Superboss':BLIND[bi].name)+(bi===2?' vs '+boss.name:''),bi===2?(boss.final?'Checkmate it twice':'Checkmate to win'):'Score '+fmt(blindTarget(run.ante,bi)));
   setOpp(bi===2?boss.name:'Next opponent',bi===2?boss.desc:'Black pieces',rating(run.ante,bi,bi===2?bid:null));
   setGoal(bi===2,0,blindTarget(run.ante,bi)); $('hMoves').textContent=movesFor(bi,bi===2?bid:null); $('meClock').classList.remove('low');
   renderMoves(); renderCaps(); hud();
@@ -1923,11 +2011,12 @@ async function startRound(){
   if(bossId==='hex'||bossId==='gambit'){let gone=false; army.forEach((d,i)=>{if(d&&d.type==='Q'){army[i]=null; gone=true;}}); if(!gone){const r=army.findIndex(d=>d&&d.type==='R'); if(r>=0) army[r]=null;}}
   const extras=bossId==='wall'?[2,3,4,5].map(f=>[rc(5,f),{id:UID++,type:'P',name:rnd(PERSONA.P.enemy),ed:null},'b']):null;
   setBg(...(bossId&&BOSS_BY[bossId].bg?BOSS_BY[bossId].bg:BG[bi]));
+  RS.lives=isFinalBoss(bossId)?1:0;
   RS.tarnish=coatLv()>=8&&run.relics.length?Math.floor(Math.random()*run.relics.length):-1;
   RS.phantom=2; RS.bTurns=0; RS.frozenToy=null; RS.locks=new Map(); RS.mines=[]; RS.vines=[]; RS.lastActor=null;
   const oppName=ki>=0?enemy[ki].name:'Opponent';
-  setEvent(BLIND[bi].name+(bossId?' vs '+BOSS_BY[bossId].name:''),bossId?'Checkmate to win':'Score '+fmt(RS.target));
-  setOpp(oppName,bossId?BOSS_BY[bossId].desc:'Black pieces',rating(run.ante,bi,bossId));
+  setEvent((isFinalBoss(bossId)?'Superboss':BLIND[bi].name)+(bossId?' vs '+BOSS_BY[bossId].name:''),isFinalBoss(bossId)?'Checkmate it twice':bossId?'Checkmate to win':'Score '+fmt(RS.target));
+  setOpp(oppName,bossId?(isFinalBoss(bossId)?'Superboss: checkmate it twice. ':'')+BOSS_BY[bossId].desc:'Black pieces',rating(run.ante,bi,bossId));
   calcSet(0,0,'Capture to score'); setTurn('Get ready…',null);
   clearBoardToys(); hud(); renderMoves(); renderCaps(); applyBoardSkin(boardId()); applyCoat(coatIdx());
   RS.b=await placeArmies(army,enemy,!!bossId,true,extras);
@@ -1935,7 +2024,8 @@ async function startRound(){
   await wait(.7);
   const mine=toysAll.filter(t=>t.side==='w'); const hero=rnd(mine);
   if(hero){hero.setExpr('happy',1.2); say(hero,bossId?rnd(['Go for the King!','Checkmate or bust!','Corner him!']):rnd(['We got this!','Let\'s gooo!','For the King!','Eyes up, team!']));}
-  if(bossId){toast(BOSS_BY[bossId].name,1.6); await wait(1.2); toast('Checkmate to win',1.4);}
+  if(isFinalBoss(bossId)){sfx('total'); shake(.3); toast('Superboss',1.3); await wait(1.1); toast(BOSS_BY[bossId].name,1.6); await wait(1.3); toast('Checkmate it twice',1.5); await wait(.6);}
+  else if(bossId){toast(BOSS_BY[bossId].name,1.6); await wait(1.2); toast('Checkmate to win',1.4);}
   await wait(.5);
   if(bossId==='saboteur'){for(let i=0;i<3;i++) plantMine();}
   if(bossId==='gardener'){for(let i=0;i<3;i++) growVine();}
@@ -2052,6 +2142,7 @@ async function playerMove(m){
     hud();
     if(res.vt) bossLine('hurt',.6);
     if(res.chk&&RS.boss==='phantom'&&RS.phantom>0&&await phantomEscape()){res.chk=inCheck(RS.b,-1); res.oppMoves=legalMoves(RS.b,-1); syncEngine();}
+    if(!res.oppMoves.length&&res.chk&&RS.lives>0&&await superRise()){res.chk=inCheck(RS.b,-1); res.oppMoves=legalMoves(RS.b,-1); res.entry.san=res.entry.san.replace(/#$/,'+'); renderMoves();}
     if(!res.oppMoves.length) return res.chk?winRound('mate'):endStalemate();
     if(res.chk){const ks=kingSq(RS.b,-1); marks[ks].check=true; refreshMarks(); const k=toys[ks]; if(k){k.setExpr('shock',2.2); say(k,RS.boss?rnd(BOSS_BY[RS.boss].lines.check):rnd(ENEMY_LINES.check));} sfx('check');}
     if(!RS.mateOnly&&RS.score>=RS.target) return winRound('score');
@@ -2059,7 +2150,7 @@ async function playerMove(m){
     await enemyTurn();
   }catch(err){console.error(err); animating=false; busy=false; if(RS) RS.turn='w'; setTurn('Your move','w');}
 }
-function aiDepth(){let d=run.ante<=1?1:run.ante<=4?2:3; if(RS.boss==='tyrant') d=Math.min(3,d+1); if(onBoard('grandmaster')) d=Math.min(3,d+1); if(hasCharter('scout2')&&!RS.mateOnly) d=Math.max(1,d-1); return d;}
+function aiDepth(){let d=run.ante<=1?1:run.ante<=4?2:3; if(isFinalBoss(RS.boss)) d=3; if(RS.boss==='tyrant') d=Math.min(3,d+1); if(onBoard('grandmaster')) d=Math.min(3,d+1); if(hasCharter('scout2')&&!RS.mateOnly) d=Math.max(1,d-1); return d;}
 function aiNoise(){const n=[140,60,30,18,10,6,4,2][Math.min(7,run.ante-1)]; return (RS.boss?n*.5:n)*(hasCharter('scout1')?1.8:1)*(onBoard('grandmaster')?.4:1)*(coatLv()>=9?.35:1);}
 async function enemyTurn(){
   RS.turn='b'; setTurn('Waiting for Black…','b'); thaw(); unlockAll();
@@ -2078,10 +2169,14 @@ async function enemyTurn(){
     if(RS.boss==='gardener'){if(RS.vines.includes(m.t)) removeVine(m.t,true); if(RS.bTurns%3===0&&RS.vines.length<10){growVine(true); bossSays(BOSS_BY.gardener.grow);}}
     if(RS.boss==='blacksmith'&&RS.bTurns%3===0) await forge();
     if(RS.boss==='plague'&&RS.bTurns%4===0) await plague();
+    if(RS.boss==='sun'&&RS.bTurns%3===0) await solarFlare();
+    if(RS.boss==='void'&&RS.bTurns%3===0) await voidPull();
     const pm=legalMoves(RS.b,1); if(!pm.length) return inCheck(RS.b,1)?loseRound('mate'):endStalemate();
     if(RS.boss==='glacier') await freezeOne(pm);
     if(RS.boss==='jailer'&&RS.lastActor&&RS.lastActor.alive) lockPiece(RS.lastActor,'cage',pm,BOSS_BY.jailer.cage);
-    if(RS.boss==='gorgon'){const ks=kingSq(RS.b,-1); let any=false; for(let s=0;s<64;s++){const t=toys[s]; if(t&&t.side==='w'&&t.type!=='K'&&cheb(s,ks)<=1&&lockPiece(t,'stone',pm)) any=true;} if(any){bossSays(BOSS_BY.gorgon.stone); const k=toys[ks]; if(k){k.laser=true; setTimeout(()=>{k.laser=false;},700);}}}}
+    if(RS.boss==='gorgon'){const ks=kingSq(RS.b,-1); let any=false; for(let s=0;s<64;s++){const t=toys[s]; if(t&&t.side==='w'&&t.type!=='K'&&cheb(s,ks)<=1&&lockPiece(t,'stone',pm)) any=true;} if(any){bossSays(BOSS_BY.gorgon.stone); const k=toys[ks]; if(k){k.laser=true; setTimeout(()=>{k.laser=false;},700);}}}
+    if(RS.boss==='eclipse') eclipseShade(pm);
+    res.chk=inCheck(RS.b,1);}
   if(res.chk){const ks=kingSq(RS.b,1); marks[ks].check=true; refreshMarks(); const k=toys[ks]; if(k){k.setExpr('shock',2.5); say(k,rnd(PERSONA.K.scared));} sfx('check'); shake(.1);}
   syncEngine(); updateThreats();
   RS.turn='w'; setTurn(res.chk?'Check! Save your King':mustCapture()?'En garde! You must capture':'Your move','w'); busy=false;
@@ -2208,7 +2303,7 @@ function tickStatuses(){
   for(const id in RS.rallyCd){RS.rallyCd[id]--; if(RS.rallyCd[id]<=0) delete RS.rallyCd[id];}
 }
 function syncEngine(){
-  SHIELD.length=0; TRANS.length=0; RULES.kpawn=!!(RS&&RS.boss==='warlord'); RULES.bigking=!!(RS&&RS.boss==='juggernaut'); RULES.ronin=!!(RS&&RS.boss==='ronin'); RULES.nodouble=!!(RS&&coatLv()>=4);
+  SHIELD.length=0; TRANS.length=0; RULES.kpawn=!!(RS&&(RS.boss==='warlord'||RS.boss==='comet')); RULES.bigking=!!(RS&&(RS.boss==='juggernaut'||RS.boss==='moon')); RULES.ronin=!!(RS&&(RS.boss==='ronin'||RS.boss==='comet')); RULES.nodouble=!!(RS&&coatLv()>=4);
   if(RS) for(let s=0;s<64;s++){const t=toys[s]; if(!t||t.side!=='w') continue;
     if(t.type==='P'&&RS.trans[t.def.id]>0) TRANS.push(s);
     if(t.type==='F'&&t.def.ab&&t.def.id!==RS.lastMovedId) SHIELD.push(s);}
@@ -2260,6 +2355,7 @@ async function performRally(hsq,m){
     const rt=toys[m.t]; if(RS.boss==='saboteur'&&rt&&RS.mines.includes(m.t)&&await detonate(rt)){res.chk=inCheck(RS.b,-1); res.oppMoves=legalMoves(RS.b,-1);}
     RS.rallyPre=res.entry.san; RS.rallyCd[h.def.id]=3; RS.lastMovedId=toys[m.t]?toys[m.t].def.id:null;
     syncEngine(); updateThreats();
+    if(!res.oppMoves.length&&res.chk&&RS.lives>0&&await superRise()){res.chk=inCheck(RS.b,-1); res.oppMoves=legalMoves(RS.b,-1); RS.rallyPre=RS.rallyPre.replace(/#$/,'+');}
     if(!res.oppMoves.length&&res.chk) return winRound('mate');
     if(!legalMoves(RS.b,1).length) return endStalemate();
     if(res.chk){const ks=kingSq(RS.b,-1); marks[ks].check=true; refreshMarks(); sfx('check');}
@@ -2299,11 +2395,66 @@ function bossLine(kind,chance){if(!RS||!RS.boss||Math.random()>(chance==null?1:c
 function bossSays(list){const k=toys[kingSq(RS.b,-1)]; if(k&&list) say(k,rnd(list),1.8); return k;}
 const cheb=(a,b)=>Math.max(Math.abs((a>>3)-(b>>3)),Math.abs((a&7)-(b&7)));
 function applyFog(){
-  if(!RS) return; const on=RS.boss==='fog'; const whites=[]; for(let s=0;s<64;s++) if(RS.b[s]>0) whites.push(s);
+  if(!RS) return; const on=RS.boss==='fog'||RS.boss==='moon'; const whites=[]; for(let s=0;s<64;s++) if(RS.b[s]>0) whites.push(s);
   for(let s=0;s<64;s++){const t=toys[s]; if(!t||t.side!=='b') continue;
     const vis=!on||t.type==='K'||whites.some(w=>cheb(w,s)<=2);
     if(vis&&!t.root.visible) burst(t.center(),['#c8ccd2','#9aa0a8','#ffffff'],12,1.6,.08,1,.8,0);
     t.root.visible=vis;}
+}
+// ---- the Celestial Court ----
+async function superRise(){ // the first checkmate cracks the orrery; the superboss rises elsewhere with two fresh pieces
+  const ks=kingSq(RS.b,-1), k=toys[ks], wk=kingSq(RS.b,1), B=BOSS_BY[RS.boss]; if(!k) return false;
+  RS.b[ks]=0; const c=[]; for(let s=0;s<64;s++){if(RS.b[s]||cheb(s,wk)<2) continue; RS.b[s]=-K; if(!isAttacked(RS.b,s,1)) c.push(s); RS.b[s]=0;} RS.b[ks]=-K;
+  if(!c.length) return false;
+  c.sort((a,b)=>cheb(b,wk)-cheb(a,wk)); const to=rnd(c.slice(0,5));
+  RS.lives--; animating=true; marks[ks].check=false; refreshMarks();
+  toast('Checkmate… but the Court does not fall',1.8); k.setExpr('dead',1.4); sfx('slam'); shake(.4);
+  const r=k.orrery&&k.orrery[0]; if(r&&r.visible){burst(r.getWorldPosition(V3(0,0,0)),['#ecd08a','#ffffff','#c9a24a'],44,4,.06,3,1.1); r.visible=false;}
+  await wait(1);
+  await tween(.4,e=>{k.root.scale.setScalar(Math.max(.01,1-e)); k.root.position.y=e*1.2;},Ez.in);
+  RS.b[ks]=0; RS.b[to]=-K; toys[ks]=null; toys[to]=k; k.cell=to; k.root.position.copy(sqPos(to)); k.root.position.y=1.2;
+  burst(k.center(),['#ffffff','#ecd08a','#8ae0ff'],30,3,.07,2,1,0);
+  await tween(.45,e=>{k.root.scale.setScalar(Math.max(.01,e)); k.root.position.y=1.2*(1-e);},Ez.out); k.root.scale.setScalar(1); k.root.position.y=0;
+  k.setExpr('angry',3); say(k,rnd(B.rise),2.2); sfx('promote');
+  const back=shuffle([...Array(16).keys()].map(i=>48+i));
+  for(const type of ['Q','N']) for(const s of back){
+    if(RS.b[s]) continue; RS.b[s]=-TID[type]; if(inCheck(RS.b,1)){RS.b[s]=0; continue;}
+    const nt=new Toy({id:UID++,type,name:'Herald of '+B.name.replace('The ',''),ed:null},'b'); nt.cell=s; toys[s]=nt; const q=sqPos(s); nt.root.position.set(q.x,4,q.z);
+    tween(.45,e=>{nt.root.position.y=4*(1-e);},Ez.in).then(()=>{nt.root.position.y=0; sfx('land'); burst(sqPos(s).add(V3(0,.2,0)),['#ecd08a','#ffffff'],10,2,.05,1.5,.5);});
+    break;}
+  await wait(.7);
+  $('oppSub').textContent='Risen! One more checkmate wins the championship.';
+  animating=false; syncEngine(); return true;
+}
+async function solarFlare(){ // burns your most valuable piece on any line through the Sun, through blockers
+  const ks=kingSq(RS.b,-1), k=toys[ks]; if(!k) return; let best=-1, bw=-1;
+  for(let s=0;s<64;s++){const v=RS.b[s]; if(v<=0||v===K||!toys[s]) continue; const dr=(s>>3)-(ks>>3), dc=(s&7)-(ks&7); if(!(dr===0||dc===0||Math.abs(dr)===Math.abs(dc))) continue;
+    const w=WORTH[TCH[v]]||1; if(w<=bw) continue; RS.b[s]=0; const ok=legalMoves(RS.b,1).length>0; RS.b[s]=v; if(ok){bw=w; best=s;}}
+  if(best<0) return;
+  const t=toys[best]; animating=true; bossSays(BOSS_BY.sun.flare); k.setExpr('angry',2); t.setExpr('shock',2); sfx('laser');
+  const L=laserBeam(k.head(),t.center()); L.m.material.color.setHex(0xffa030);
+  await tween(.6,()=>{L.set(k.head(),t.center()); L.m.scale.x=L.m.scale.z=2+Math.random()*2; if(Math.random()<.6) burst(t.center(),['#ffb030','#ffe08a','#ff5a1a'],2,2,.06,1.5,.4);},Ez.lin);
+  L.kill(); RS.b[best]=0; toys[best]=null; t.cell=-1; RS.lost++; RS.capB.push(t.type); renderCaps();
+  sfx('slam'); shake(.25); burst(t.center(),['#ff7a1a','#ffd34d','#2a2a2a','#ffffff'],36,4,.08,3,1);
+  await poof(t,['#ff7a1a','#2a1a10']); toast('Solar flare!',1.2); animating=false; syncEngine();
+}
+async function voidPull(){ // your piece nearest the Void turns Black for the rest of the game
+  const ks=kingSq(RS.b,-1); if(ks<0) return; let best=-1, bd=99, bw=-1;
+  for(let s=0;s<64;s++){const v=RS.b[s]; if(v<=0||v===K||!toys[s]) continue; const d=cheb(s,ks), w=WORTH[TCH[v]]||1; if(d>bd||(d===bd&&w<=bw)) continue;
+    RS.b[s]=-v; const ok=legalMoves(RS.b,1).length>0; RS.b[s]=v; if(ok){bd=d; bw=w; best=s;}}
+  if(best<0) return;
+  const t=toys[best], v=RS.b[best], type=t.type; animating=true; bossSays(BOSS_BY.void.pull); t.setExpr('shock',2.5); say(t,rnd(['Nooo!','It\'s pulling me!','Tell them I tried!']),1.4); sfx('whoosh');
+  await tween(.8,(e,q)=>{t.pivot.rotation.y=e*Math.PI*6; t.root.scale.setScalar(Math.max(.01,1-e*.9)); t.root.position.y=Math.sin(Math.PI*q)*.6; if(Math.random()<.5) burst(t.center(),['#5a2a8a','#ff8a3a','#1a0a2a'],2,1.5,.05,.5,.5,0);},Ez.in);
+  t.dispose(); RS.b[best]=-v; const nt=new Toy({id:UID++,type,name:'Lost '+t.name,ed:null},'b'); nt.cell=best; toys[best]=nt; nt.root.position.copy(sqPos(best));
+  RS.lost++; RS.capB.push(type); renderCaps();
+  nt.root.scale.setScalar(.01); await tween(.4,e=>{nt.root.scale.setScalar(Math.max(.01,e));},Ez.back); nt.root.scale.setScalar(1); nt.setExpr('angry',2); say(nt,rnd(['I see the dark now.','Sorry, old friends.','...']),1.6);
+  toast(`Your ${PNAME[type]} falls into the Void`,1.5); animating=false; syncEngine();
+}
+function eclipseShade(pm){ // your two most valuable pieces can't move next turn
+  const ws=[]; for(let s=0;s<64;s++){const t=toys[s]; if(t&&t.side==='w'&&t.type!=='K') ws.push(t);}
+  ws.sort((a,b)=>(WORTH[b.type]||1)-(WORTH[a.type]||1)); let n=0;
+  for(const t of ws){if(n>=2) break; if(lockPiece(t,'shadow',pm)) n++;}
+  if(n) bossSays(BOSS_BY.eclipse.shade);
 }
 async function phantomEscape(){
   const ks=kingSq(RS.b,-1), k=toys[ks], wk=kingSq(RS.b,1), c=[]; if(!k) return false;
@@ -2368,7 +2519,7 @@ function thaw(){
 
 // ---- locks shared by the Jailer (cage) and the Gorgon (stone); the Glacier keeps its own ice ----
 function isLocked(t){return !!(t&&RS&&(RS.frozenToy===t||(RS.locks&&RS.locks.has(t))));}
-function lockLine(t){const k=RS.locks&&RS.locks.get(t); return k==='cage'?rnd(['Let me out!','I\'m innocent!','Locked up!']):k==='stone'?rnd(['I... am... rock.','Can\'t... move...','Stone cold.']):rnd(['I\'m frozen solid!','Brrr... can\'t move!','Ice ice, baby.']);}
+function lockLine(t){const k=RS.locks&&RS.locks.get(t); return k==='cage'?rnd(['Let me out!','I\'m innocent!','Locked up!']):k==='stone'?rnd(['I... am... rock.','Can\'t... move...','Stone cold.']):k==='shadow'?rnd(['I can\'t see!','So dark...','Where did the light go?']):rnd(['I\'m frozen solid!','Brrr... can\'t move!','Ice ice, baby.']);}
 function playerMoves(){
   if(!RS) return []; const all=legalMoves(RS.b,1);
   let ms=all.filter(m=>!isLocked(toys[m.f])&&!(RS.b[m.f]===K&&RS.mines&&RS.mines.includes(m.t))&&!(RS.vines&&RS.vines.includes(m.t)));
@@ -2377,7 +2528,7 @@ function playerMoves(){
   return ms;
 }
 function mustCapture(){return !!(RS&&RS.boss==='duelist'&&playerMoves().some(m=>RS.b[m.t]<0));}
-const STONE=toon('#9a968e'), CAGE=new THREE.MeshPhongMaterial({color:0x3a3a40,specular:0xffffff,shininess:90});
+const SHADOW=new THREE.MeshToonMaterial({color:'#2a2140',gradientMap:gradTex,emissive:0x2a1050,emissiveIntensity:.7}), STONE=toon('#9a968e'), CAGE=new THREE.MeshPhongMaterial({color:0x3a3a40,specular:0xffffff,shininess:90});
 function lockPiece(t,kind,pm,lines){
   if(!t||!t.alive||isLocked(t)) return false;
   if(!pm.some(m=>{const o=toys[m.f]; return o&&o!==t&&!isLocked(o);})) return false;
@@ -2387,15 +2538,15 @@ function lockPiece(t,kind,pm,lines){
     for(const y of [.02,h]){const r=new THREE.Mesh(geo('cring',()=>new THREE.TorusGeometry(.38,.022,6,24)),CAGE); r.rotation.x=Math.PI/2; r.position.y=y; g.add(r);}
     t.root.add(g); t.lockFx=g; g.position.y=2.5; tween(.3,e=>{g.position.y=2.5*(1-e);},Ez.in).then(()=>{sfx('slam'); shake(.05);});
     t.setExpr('worried',2); if(lines) bossSays(lines);}
-  if(kind==='stone'){t.stoneSwap=[]; t.model.traverse(o=>{if(o.isMesh&&o.material!==OUT&&o.material!==WHITE&&o.material!==BLACK&&o.material!==GLOWRED){t.stoneSwap.push([o,o.material]); o.material=STONE;}});
-    burst(t.center(),['#9a968e','#c8c4bc'],14,2,.06,1.5,.7); sfx('slam'); t.setExpr('shock',3);}
+  if(kind==='stone'||kind==='shadow'){const sh=kind==='shadow'; t.stoneSwap=[]; t.model.traverse(o=>{if(o.isMesh&&o.material!==OUT&&o.material!==WHITE&&o.material!==BLACK&&o.material!==GLOWRED){t.stoneSwap.push([o,o.material]); o.material=sh?SHADOW:STONE;}});
+    burst(t.center(),sh?['#2a1050','#8a6ad8','#ffc070']:['#9a968e','#c8c4bc'],14,2,.06,1.5,.7); sfx(sh?'whoosh':'slam'); t.setExpr(sh?'worried':'shock',3);}
   return true;
 }
 function unlockAll(){
   if(!RS||!RS.locks) return;
   for(const [t,kind] of RS.locks){
     if(kind==='cage'&&t.lockFx){t.root.remove(t.lockFx); t.lockFx=null;}
-    if(kind==='stone'&&t.stoneSwap){for(const [o,m] of t.stoneSwap) o.material=m; t.stoneSwap=null; if(t.alive) burst(t.center(),['#9a968e','#c8c4bc'],10,2.5,.05,1.5,.6);}}
+    if((kind==='stone'||kind==='shadow')&&t.stoneSwap){for(const [o,m] of t.stoneSwap) o.material=m; t.stoneSwap=null; if(t.alive) burst(t.center(),['#9a968e','#c8c4bc'],10,2.5,.05,1.5,.6);}}
   RS.locks.clear();
 }
 // ---- the Saboteur's mines ----
@@ -3188,7 +3339,7 @@ function showHowTo(){
     <dl class="laws">
       <dt>Points</dt><dd>A capture scores the victim's Material × your attacker's Brilliance. Humble Pawns strike with the most Brilliance.</dd>
       <dt>Opening &amp; Middlegame</dt><dd>Reach the points target before your moves run out. Checkmate also wins on the spot.</dd>
-      <dt>Endgame</dt><dd>Each event ends against a titled opponent. Points don't decide it: checkmate their King within the move limit.</dd>
+      <dt>Endgame</dt><dd>Each event ends against a titled opponent. Points don't decide it: checkmate their King within the move limit. The World Championship ends against a superboss of the Celestial Court, who must be checkmated twice.</dd>
       <dt>Defeat</dt><dd>Get checkmated, run out of moves, or stalemate, and the run is over.</dd>
       <dt>Between games</dt><dd>Spend your purse in the Curio Shoppe on curios, recruits, promotions and inlays. Open lots to choose from curios, annotations or recruits, and sign one club charter per event for a lasting edge. Win eight events to become World Champion.</dd>
       <dt>Boards</dt><dd>Every run is played on a board you choose before it starts. Each board has its own look and its own rules. Only the Club Board is open at first; the rest unlock as you play.</dd>
@@ -3197,7 +3348,7 @@ function showHowTo(){
     </dl>${backBtn}`,true);
   on('bBack',hideScreen);
 }
-const ALM_TABS=[['boards','Boards'],['coats','Coats'],['curios','Curios'],['rare','Rare pieces'],['ann','Annotations'],['charters','Charters'],['bosses','Endgame bosses']];
+const ALM_TABS=[['court','Celestial Court'],['boards','Boards'],['coats','Coats'],['curios','Curios'],['rare','Rare pieces'],['ann','Annotations'],['charters','Charters'],['bosses','Endgame bosses']];
 function showAlmanac(tab){
   const card=(pic,meta,name,desc,extra)=>`<div class="lotcard"><div class="pic">${pic}</div>${meta?`<span class="meta">${meta}</span>`:''}<b>${name}</b><small>${desc}${extra||''}</small></div>`;
   const ph=key=>`<img data-thumb="${key}" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">`;
@@ -3208,6 +3359,7 @@ function showAlmanac(tab){
   if(tab==='charters') items=CHARTERS.map(c=>card(`<span class="annmark" style="font-size:24px">§</span>`,c.req?'Follows '+CHARTER_BY[c.req].name:'Club charter',c.name,c.desc)).join('');
   if(tab==='boards'){const st=boardStore(); items=BOARDS.map(b=>{const open=st.unlocked.includes(b.id); return card(`<span class="pSw" style="${swStyle(b)}">${open?'':'<i class="lk"></i>'}</span>`,open?(st.best[b.id]?'Best: beat Event '+roman(Math.min(20,st.best[b.id])):'Unlocked'):'Locked',b.name,b.effect,b.unlock?`<br><i>Unlock: ${b.unlock}</i>`:'');}).join('');}
   if(tab==='coats'){const st=boardStore(); items=COATS.map((c,i)=>card(`<span class="cChip big" style="--c:${c.color}">${i<=st.coat?'':'<i class="lk"></i>'}</span>`,`Coat ${roman(i+1)} · ${i<=st.coat?'unlocked':'locked'}`,c.name,c.rule,(i?' <i>Plus every earlier coat.</i>':'')+(c.unlock?`<br><i>Unlock: ${c.unlock}</i>`:''))).join('');}
+  if(tab==='court') items=FINAL_BOSSES.map(b=>card(ph('boss:'+b.id),'Superboss · Event VIII',b.name,'Checkmate it twice. '+b.desc,`<br><i>“${b.lines.intro[0]}”</i>`)).join('');
   if(tab==='bosses') items=BOSSES.map(b=>card(ph('boss:'+b.id),'From event '+roman(b.min||1),b.name,b.desc,`<br><i>“${b.lines.intro[0]}”</i>`)).join('');
   showScreen(`<span class="eyebrow">The Almanac</span><h2>Everything you can meet on a run</h2>
     <div class="tabs" role="tablist">${ALM_TABS.map(([k,l])=>`<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${k===tab}">${l}</button>`).join('')}</div>
@@ -3261,10 +3413,10 @@ function showBlinds(){
   if(!run.pending||run.pending.key!==key) run.pending={key,enemy:enemyArmy(run.ante,bi,bi===2?bid:null)};
   save(); hudIdle(); setTurn('Choose your game',null); setBg(...BG[bi]);
   const rows=[0,1,2].map(i=>{
-    const st=i<bi?' done':i===bi?' now':'', nm=i===2?`Endgame · ${boss.name}`:BLIND[i].name;
-    const goal=i===2?`Checkmate within ${movesFor(2,bid)} moves. ${boss.desc}`:`Score ${fmt(blindTarget(run.ante,i))} points in ${movesFor(i,null)} moves.`;
+    const st=i<bi?' done':i===bi?' now':'', nm=i===2?`${boss.final?'Superboss':'Endgame'} · ${boss.name}`:BLIND[i].name;
+    const goal=i===2?`Checkmate${boss.final?' twice':''} within ${movesFor(2,bid)} moves. ${boss.desc}${boss.final?' <i>A superboss of the Celestial Court: the first checkmate cracks its orrery and it rises again with two fresh pieces.</i>':''}`:`Score ${fmt(blindTarget(run.ante,i))} points in ${movesFor(i,null)} moves.`;
     const pic=i===2?bossThumb(bid):'', quote=i===2?`<small class="quote">“${boss.lines.intro[0]}”</small>`:'';
-    return `<div class="fixture${st}${i===2?' boss':''}"><div class="no">${pic?`<img class="bossPic" src="${pic}" alt="${boss.name}">`:roman(i+1)}</div><div><b>${nm}</b><span class="elo">${rating(run.ante,i,i===2?bid:null)}</span><small>${goal}</small>${quote}</div><div class="rw">${i<bi?'Won':money(i===0&&coatLv()>=2?0:BLIND[i].reward)}</div></div>`;}).join('');
+    return `<div class="fixture${st}${i===2?' boss':''}${i===2&&boss.final?' super':''}"><div class="no">${pic?`<img class="bossPic" src="${pic}" alt="${boss.name}">`:roman(i+1)}</div><div><b>${nm}</b><span class="elo">${rating(run.ante,i,i===2?bid:null)}</span><small>${goal}</small>${quote}</div><div class="rw">${i<bi?'Won':money(i===0&&coatLv()>=2?0:BLIND[i].reward)}</div></div>`;}).join('');
   const theirs=run.pending.enemy.filter(Boolean).map(d=>gl(d.type)).join(' ');
   const mine=run.army.filter(d=>d&&!(bi===2&&bid==='gambit'&&d.type==='Q')).map(d=>glw(d.type)).join(' ');
   showScreen(`<div class="row spread"><div><span class="eyebrow">${run.ante<=8?`Event ${roman(run.ante)} of VIII`:'Exhibition'} · ${BOARD_BY[boardId()].name} · ${COATS[coatIdx()].name} coat</span><h2>${eventName(run.ante)}</h2></div><div class="pursebig">${money(run.money)}</div></div>
